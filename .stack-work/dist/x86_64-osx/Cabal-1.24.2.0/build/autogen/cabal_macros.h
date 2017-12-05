@@ -14,6 +14,13 @@
   (major1) == 4 && (major2) <  9 || \
   (major1) == 4 && (major2) == 9 && (minor) <= 1)
 
+/* package network-2.6.3.2 */
+#define VERSION_network "2.6.3.2"
+#define MIN_VERSION_network(major1,major2,minor) (\
+  (major1) <  2 || \
+  (major1) == 2 && (major2) <  6 || \
+  (major1) == 2 && (major2) == 6 && (minor) <= 3)
+
 /* package random-1.1 */
 #define VERSION_random "1.1"
 #define MIN_VERSION_random(major1,major2,minor) (\
@@ -70,7 +77,7 @@
   (major1) == 0 && (major2) <  29 || \
   (major1) == 0 && (major2) == 29 && (minor) <= 2)
 
-#define CURRENT_COMPONENT_ID "MiaNet-0.1.0.0-1KNtZhA3zGHEIbgOI8D02V"
+#define CURRENT_COMPONENT_ID "MiaNet-0.1.0.0-1m2dbMuTYfUC5Xirefzyw9"
 
-#define CURRENT_PACKAGE_KEY "MiaNet-0.1.0.0-1KNtZhA3zGHEIbgOI8D02V"
+#define CURRENT_PACKAGE_KEY "MiaNet-0.1.0.0-1m2dbMuTYfUC5Xirefzyw9"
 

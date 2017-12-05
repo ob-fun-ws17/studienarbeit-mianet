@@ -30,7 +30,7 @@ version = Version [0,1,0,0] []
 bindir, libdir, dynlibdir, datadir, libexecdir, sysconfdir :: FilePath
 
 bindir     = "/Users/nils/Dropbox/Semester_5_Nils/Funktionale_Programmierung/studienarbeit-mianet/.stack-work/install/x86_64-osx/lts-9.10/8.0.2/bin"
-libdir     = "/Users/nils/Dropbox/Semester_5_Nils/Funktionale_Programmierung/studienarbeit-mianet/.stack-work/install/x86_64-osx/lts-9.10/8.0.2/lib/x86_64-osx-ghc-8.0.2/MiaNet-0.1.0.0-1KNtZhA3zGHEIbgOI8D02V"
+libdir     = "/Users/nils/Dropbox/Semester_5_Nils/Funktionale_Programmierung/studienarbeit-mianet/.stack-work/install/x86_64-osx/lts-9.10/8.0.2/lib/x86_64-osx-ghc-8.0.2/MiaNet-0.1.0.0-1m2dbMuTYfUC5Xirefzyw9"
 dynlibdir  = "/Users/nils/Dropbox/Semester_5_Nils/Funktionale_Programmierung/studienarbeit-mianet/.stack-work/install/x86_64-osx/lts-9.10/8.0.2/lib/x86_64-osx-ghc-8.0.2"
 datadir    = "/Users/nils/Dropbox/Semester_5_Nils/Funktionale_Programmierung/studienarbeit-mianet/.stack-work/install/x86_64-osx/lts-9.10/8.0.2/share/x86_64-osx-ghc-8.0.2/MiaNet-0.1.0.0"
 libexecdir = "/Users/nils/Dropbox/Semester_5_Nils/Funktionale_Programmierung/studienarbeit-mianet/.stack-work/install/x86_64-osx/lts-9.10/8.0.2/libexec"

@@ -1,10 +1,6 @@
--- | A Lib module.
 module Lib
-    ( tossDice
+    ( someFunc
     ) where
 
-      import System.Random
-      import System.Environment
-
-      tossDice :: RandomGen g => g -> [Char]
-      tossDice g = take 1 (randomRs ('1', '6') g)
+someFunc :: IO ()
+someFunc = putStrLn "someFunc"

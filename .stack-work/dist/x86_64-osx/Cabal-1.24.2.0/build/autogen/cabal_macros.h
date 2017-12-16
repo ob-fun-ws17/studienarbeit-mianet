@@ -28,6 +28,13 @@
   (major1) == 2 && (major2) <  6 || \
   (major1) == 2 && (major2) == 6 && (minor) <= 3)
 
+/* package criterion-1.1.4.0 */
+#define VERSION_criterion "1.1.4.0"
+#define MIN_VERSION_criterion(major1,major2,minor) (\
+  (major1) <  1 || \
+  (major1) == 1 && (major2) <  1 || \
+  (major1) == 1 && (major2) == 1 && (minor) <= 4)
+
 /* tool gcc-4.2.1 */
 #define TOOL_VERSION_gcc "4.2.1"
 #define MIN_TOOL_VERSION_gcc(major1,major2,minor) (\

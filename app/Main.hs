@@ -1,59 +1,120 @@
---------------------------------------------------------------------------------
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
-module Main
-    ( main
-    ) where
+module Main where
+import Data.Char (isPunctuation, isSpace)
+import Data.Monoid (mappend)
+import Data.Text (Text, unpack, pack)
+import Data.List.Split
+import Data.Aeson
+import GHC.Generics
+import Control.Applicative
+import Control.Exception (finally)
+import Control.Monad (forM_, forever)
+import Control.Concurrent (MVar, newMVar, modifyMVar_, modifyMVar, readMVar)
+import qualified Data.Text as T
+import qualified Data.Text.IO as T
+import qualified Network.WebSockets as WS
+
+type Client = (Text, WS.Connection)
+
+type ServerState = [Client]
+
+data Message = Message {
+    command       :: String,
+    parameter     :: String
+  } deriving Show
+
+instance FromJSON Message where
+    parseJSON (Object v) = Message <$> v .: "command" <*> v .: "parameter"
+    parseJSON _ = empty
+
+instance ToJSON Message where
+    toJSON (Message cmd param) = object ["command" .= cmd, "parameter" .= param]
+
+newServerState :: ServerState
+newServerState = []
 
 
---------------------------------------------------------------------------------
-import           Message
-import           Control.Concurrent  (forkIO)
-import           Control.Monad       (forever, unless)
-import           Control.Monad.Trans (liftIO)
-import           Network.Socket      (withSocketsDo)
-import           Data.Text           (Text, unpack, pack)
-import           Data.List.Split
-import           Control.Applicative
-import           Data.Aeson
-import           GHC.Generics
-import qualified Data.Text           as T
-import qualified Data.Text.IO        as T
-import qualified Network.WebSockets  as WS
-import qualified Data.ByteString.Lazy.Char8 as C
+numClients :: ServerState -> Int
+numClients = length
 
 
---------------------------------------------------------------------------------
-app :: WS.ClientApp ()
-app conn = do
-    putStrLn "Connected!"
+clientExists :: Client -> ServerState -> Bool
+clientExists client = any ((== fst client) . fst)
 
-    -- Fork a thread that writes WS data to stdout
-    _ <- forkIO $ forever $ do
-        msg <- WS.receiveData conn
-        liftIO $ T.putStrLn msg
+addClient :: Client -> ServerState -> ServerState
+addClient client clients = client : clients
 
-    -- Read from stdin and write to WS
-    let loop = do
-            line <- T.getLine
-                      
-            --json
-            let unhandledMsg = if(unpack line /= "") then messageHandler line else "hallo"
-            let message = pack $ unhandledMsg
-            
-            --let command = decode(show(message))
-            let messageContainer = jsonToMessageContainer $ jsonParse unhandledMsg
-            let msg = extractContainer messageContainer
-            
-            --print command parameter
-            print $ getCommandOfMessage msg
-            
-            unless (T.null line) $ WS.sendTextData conn message >> loop
+removeClient :: Client -> ServerState -> ServerState
+removeClient client = filter ((/= fst client) . fst)
 
-    loop
-    WS.sendClose conn ("Bye!" :: Text)
+broadcast :: Text -> ServerState -> IO ()
+broadcast message clients = do
+    T.putStrLn message
+    forM_ clients $ \(_, conn) -> WS.sendTextData conn message
 
---------------------------------------------------------------------------------
+
 main :: IO ()
-main = withSocketsDo $ WS.runClient "127.0.0.1" 9000 "/" app
-        
+main = do
+    state <- newMVar newServerState
+    WS.runServer "127.0.0.1" 9000 $ application state
 
+
+application :: MVar ServerState -> WS.ServerApp
+
+
+application state pending = do
+    conn <- WS.acceptRequest pending
+    WS.forkPingThread conn 30
+
+    msg <- WS.receiveData conn
+    print msg
+    clients <- readMVar state
+    case msg of
+
+
+
+        _   | not (prefix `T.isPrefixOf` msg) ->
+                WS.sendTextData conn ("Wrong announcement" :: Text)
+
+
+
+            | any ($ fst client)
+                [T.null, T.any isPunctuation, T.any isSpace] ->
+                    WS.sendTextData conn ("Name cannot " `mappend`
+                        "contain punctuation or whitespace, and " `mappend`
+                        "cannot be empty" :: Text)
+
+
+
+            | clientExists client clients ->
+                WS.sendTextData conn ("User already exists" :: Text)
+
+
+            | otherwise -> flip finally disconnect $ do
+
+
+               modifyMVar_ state $ \s -> do
+                   let s' = addClient client s
+                   WS.sendTextData conn $
+                       "Welcome! Users: " `mappend`
+                       T.intercalate ", " (map fst s)
+                   broadcast (fst client `mappend` " joined") s'
+                   return s' 
+                
+               talk conn state client
+          where
+            prefix     = "Hi! "
+            client     = (T.drop (T.length prefix) msg, conn)
+            disconnect = do
+                -- Remove client and return new state
+                s <- modifyMVar state $ \s ->
+                    let s' = removeClient client s in return (s', s')
+                broadcast (fst client `mappend` " disconnected") s
+
+
+talk :: WS.Connection -> MVar ServerState -> Client -> IO ()
+talk conn state (user, _) = forever $ do
+    msg <- WS.receiveData conn
+    readMVar state >>= broadcast
+        (user `mappend` ": " `mappend` msg)
+    

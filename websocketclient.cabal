@@ -29,6 +29,13 @@ library
       src
   build-depends:
       base >= 4.7 && < 5
+    , text
+    , websockets
+    , network
+    , mtl
+    , split
+    , aeson
+    , bytestring
   exposed-modules:
       Lib, Message
   default-language: Haskell2010

@@ -7,19 +7,19 @@
   (major1) == 0 && (major2) <  1 || \
   (major1) == 0 && (major2) == 1 && (minor) <= 0)
 
-/* package base-4.9.1.0 */
-#define VERSION_base "4.9.1.0"
-#define MIN_VERSION_base(major1,major2,minor) (\
-  (major1) <  4 || \
-  (major1) == 4 && (major2) <  9 || \
-  (major1) == 4 && (major2) == 9 && (minor) <= 1)
-
 /* package aeson-1.1.2.0 */
 #define VERSION_aeson "1.1.2.0"
 #define MIN_VERSION_aeson(major1,major2,minor) (\
   (major1) <  1 || \
   (major1) == 1 && (major2) <  1 || \
   (major1) == 1 && (major2) == 1 && (minor) <= 2)
+
+/* package base-4.9.1.0 */
+#define VERSION_base "4.9.1.0"
+#define MIN_VERSION_base(major1,major2,minor) (\
+  (major1) <  4 || \
+  (major1) == 4 && (major2) <  9 || \
+  (major1) == 4 && (major2) == 9 && (minor) <= 1)
 
 /* package bytestring-0.10.8.1 */
 #define VERSION_bytestring "0.10.8.1"
@@ -105,7 +105,7 @@
   (major1) == 0 && (major2) <  68 || \
   (major1) == 0 && (major2) == 68 && (minor) <= 1)
 
-#define CURRENT_COMPONENT_ID "websocketclient-0.1.0.0-LToNBSaj50Z6N540WxeLhe"
+#define CURRENT_COMPONENT_ID "websocketclient-0.1.0.0-FRb5LLr3zsECloWhc1MgyH"
 
-#define CURRENT_PACKAGE_KEY "websocketclient-0.1.0.0-LToNBSaj50Z6N540WxeLhe"
+#define CURRENT_PACKAGE_KEY "websocketclient-0.1.0.0-FRb5LLr3zsECloWhc1MgyH"
 

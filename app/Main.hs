@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
 module Main where
+import Message
 import Data.Char (isPunctuation, isSpace)
 import Data.Monoid (mappend)
 import Data.Text (Text, unpack, pack)
@@ -18,17 +19,6 @@ type Client = (Text, WS.Connection)
 
 type ServerState = [Client]
 
-data Message = Message {
-    command       :: String,
-    parameter     :: String
-  } deriving Show
-
-instance FromJSON Message where
-    parseJSON (Object v) = Message <$> v .: "command" <*> v .: "parameter"
-    parseJSON _ = empty
-
-instance ToJSON Message where
-    toJSON (Message cmd param) = object ["command" .= cmd, "parameter" .= param]
 
 newServerState :: ServerState
 newServerState = []
@@ -67,30 +57,37 @@ application state pending = do
     WS.forkPingThread conn 30
 
     msg <- WS.receiveData conn
-    print msg
+    --let messageContainer = jsonToMessageContainer $ jsonParse $ unpack msg
+    --let message = extractContainer messageContainer
+    --let command = getCommandOfMessage message
+    --print command
+    --print command
+    --print msg
     clients <- readMVar state
     case msg of
 
-
-
-        _   | not (prefix `T.isPrefixOf` msg) ->
-                WS.sendTextData conn ("Wrong announcement" :: Text)
-
-
-
-            | any ($ fst client)
+            
+        _   | any ($ pack parameter)
                 [T.null, T.any isPunctuation, T.any isSpace] ->
-                    WS.sendTextData conn ("Name cannot " `mappend`
+                    WS.sendTextData conn ("parameter cannot " `mappend`
                         "contain punctuation or whitespace, and " `mappend`
                         "cannot be empty" :: Text)
 
+            | any ($ pack command)
+                [T.null, T.any isPunctuation, T.any isSpace] ->
+                    WS.sendTextData conn ("command cannot " `mappend`
+                        "contain punctuation or whitespace, and " `mappend`
+                        "cannot be empty" :: Text)
 
 
             | clientExists client clients ->
                 WS.sendTextData conn ("User already exists" :: Text)
 
+            -- | command == "login" ->
+            --    WS.sendTextData conn ("that worked" :: Text)
+            -- otherwise
 
-            | otherwise -> flip finally disconnect $ do
+            | command == "login" -> flip finally disconnect $ do
 
 
                modifyMVar_ state $ \s -> do
@@ -102,9 +99,16 @@ application state pending = do
                    return s' 
                 
                talk conn state client
+
+            | otherwise -> 
+                WS.sendTextData conn ("Unknown Action" :: Text)
+
           where
-            prefix     = "Hi! "
-            client     = (T.drop (T.length prefix) msg, conn)
+            messageContainer = jsonToMessageContainer $ jsonParse $ unpack msg
+            message = extractContainer messageContainer
+            command = getCommandOfMessage message 
+            parameter = getParameterOfMessage message
+            client     = (pack parameter, conn)
             disconnect = do
                 -- Remove client and return new state
                 s <- modifyMVar state $ \s ->
@@ -115,6 +119,33 @@ application state pending = do
 talk :: WS.Connection -> MVar ServerState -> Client -> IO ()
 talk conn state (user, _) = forever $ do
     msg <- WS.receiveData conn
-    readMVar state >>= broadcast
-        (user `mappend` ": " `mappend` msg)
+    case msg of
+        _   | any ($ pack command)
+                [T.null, T.any isPunctuation, T.any isSpace] ->
+                    WS.sendTextData conn ("parameter cannot " `mappend`
+                        "contain punctuation or whitespace, and " `mappend`
+                        "cannot be empty" :: Text)
+
+            | any ($ pack parameter)
+                [T.null, T.any isPunctuation, T.any isSpace] ->
+                    WS.sendTextData conn ("command cannot " `mappend`
+                        "contain punctuation or whitespace, and " `mappend`
+                        "cannot be empty" :: Text)
+            
+            | command == "chat" ->
+                readMVar state >>= broadcast
+                        (user `mappend` ": " `mappend` pack parameter)
+
+            | otherwise ->
+                WS.sendTextData conn ("Unknown Action" :: Text)
+
+          where
+            messageContainer = jsonToMessageContainer $ jsonParse $ unpack msg
+            message = extractContainer messageContainer
+            command = getCommandOfMessage message 
+            parameter = getParameterOfMessage message
+            client     = (pack parameter, conn)
+
+    --readMVar state >>= broadcast
+        --(user `mappend` ": " `mappend` msg)
     

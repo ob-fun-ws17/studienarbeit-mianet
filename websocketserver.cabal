@@ -29,8 +29,15 @@ library
       src
   build-depends:
       base >= 4.7 && < 5
+    , text
+    , websockets
+    , network
+    , mtl
+    , split
+    , aeson
+    , bytestring
   exposed-modules:
-      Lib
+      Lib, Message
   default-language: Haskell2010
 
 executable websocketserver-exe
@@ -42,10 +49,12 @@ executable websocketserver-exe
       base >= 4.7 && < 5
     , websocketserver
     , text
-    , network
     , websockets
+    , network
+    , mtl
     , split
     , aeson
+    , bytestring
   default-language: Haskell2010
 
 test-suite websocketserver-test

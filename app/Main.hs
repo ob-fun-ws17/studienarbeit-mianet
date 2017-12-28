@@ -45,7 +45,7 @@ app conn = do
             let msg = extractContainer messageContainer
             
             --print command parameter
-            print $ getCommandOfMessage msg
+            --print $ getCommandOfMessage msg
             
             unless (T.null line) $ WS.sendTextData conn message >> loop
 

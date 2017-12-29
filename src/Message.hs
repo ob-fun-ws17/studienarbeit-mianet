@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
 module Message
-( messageHandler, jsonStringify, jsonParse, jsonToMessageContainer, getCommandOfMessage, getParameterOfMessage, extractContainer
+( messageHandler, jsonStringify, jsonParse, jsonToMessageContainer, getCommandOfMessage, getParameterOfMessage, extractContainer, Message
 ) where
 
 --------------------------------

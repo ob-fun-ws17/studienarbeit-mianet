@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
 module Main where
 import Rules
-import Message
+import Message as MS
 import Data.Char (isPunctuation, isSpace)
 import Data.Monoid (mappend)
 import Data.Text (Text, unpack, pack)
@@ -119,15 +119,7 @@ application state pending = do
     WS.forkPingThread conn 30
 
     msg <- WS.receiveData conn
-    --let messageContainer = jsonToMessageContainer $ jsonParse $ unpack msg
-    --let message = extractContainer messageContainer
-    --let command = getCommandOfMessage message
-    --print command
-    --print command
-    --print msg
     clients <- readMVar state
-    --print $ fst $ head clients 
-    
     
     case msg of
 
@@ -148,9 +140,6 @@ application state pending = do
             | clientExists client clients ->
                 sendToSenderClient conn ("User already exists" :: Text)
 
-            -- | command == "login" ->
-            --    WS.sendTextData conn ("that worked" :: Text)
-            -- otherwise
 
             | command == "login" -> flip finally disconnect $ do
 
@@ -184,14 +173,11 @@ application state pending = do
 talk :: WS.Connection -> MVar ServerState -> Client -> IO ()
 talk conn state (user, _) = forever $ do
     clients <- readMVar state
-    --print $ fst $ head clients 
-    --let actor = fst $ (!!) clients 0
-    --let actor = fst $ head clients
-    --print actor
-    --print user
-    --print "-"
+    let clients' = clients
+    
     msg <- WS.receiveData conn
-    case (msg, clients, user) of
+
+    case (msg) of
         _   | any ($ pack command)
                 [T.null, T.any isPunctuation, T.any isSpace] ->
                     WS.sendTextData conn ("parameter cannot " `mappend`
@@ -204,46 +190,59 @@ talk conn state (user, _) = forever $ do
                         "contain punctuation or whitespace, and " `mappend`
                         "cannot be empty" :: Text)
             
-            | command == "chat" ->
-                --listAllClients state
-                --sendToActor state (user `mappend` ": " `mappend` pack parameter)
-                sendToAllClientsExceptSender state client (user `mappend` ": " `mappend` pack parameter)
-                --sendToAllClients state (user `mappend` ": " `mappend` pack parameter)
-
-            | command == "actor" ->
-                sendToActor state (user `mappend` ": " `mappend` pack parameter)
-
-            | command == "reactor" ->
-                sendToReactor state (user `mappend` ": " `mappend` pack parameter)
-
             | command == "nextdraw" ->
-                modifyMVar_ state $ \s -> do
-                    let s' = moveClient s
-                    return s'
-
-            | command == "list" ->
-                readMVar state >>= listClients
-
-            | command == "isactor" ->
-                clientIsActor' client clients
-
-            | command == "rolldices" ->
-                if (actor == user)
-                    then
-                        rollDices state
-                    else 
-                        sendToSenderClient conn $ pack (getClientName 0 clients ++ " ist am Zug")
-               
+                 modifyMVar_ state $ \s -> do
+                     let s' = moveClient s
+                     return s'
+             
             | otherwise ->
-                sendToSenderClient conn ("Unknown Action" :: Text)
+                readMVar state >>= handleMessage message client
+                --sendToSenderClient conn ("Unknown Action" :: Text)
 
           where
             messageContainer = jsonToMessageContainer $ jsonParse $ unpack msg
             message = extractContainer messageContainer
             command = getCommandOfMessage message 
             parameter = getParameterOfMessage message
-            client     = (user, conn)
-            actor = fst $ head clients
+            client     = (user, conn)            
+
+handleMessage :: MS.Message -> Client -> ServerState -> IO ()
+handleMessage message client state = 
+    case command of
+        "rolldices" -> 
+            if actorName == clientName
+                then rollDices sendToActor'
+                else sendToSenderClient' ("Du bist nicht am Zug" :: Text)
+        "chat" ->
+            sendToAllClientsExceptSender' $ (fst client `mappend` ": " `mappend` pack parameter)
+
+        "actor" ->
+            sendToActor' $ (fst client `mappend` ": " `mappend` pack parameter)
+
+        "reactor" ->
+            sendToReactor' $ (fst client `mappend` ": " `mappend` pack parameter)
+
+        "chatall" ->
+            sendToAllClients' $ (fst client `mappend` ": " `mappend` pack parameter)
+
+        "list" -> 
+            listClients state
+
+        _ -> sendToSenderClient' ("unknow command" :: Text)
+        --"chat" ->
+            --sendToAllClients'
+
+    where 
+        sendToSenderClient' msg = WS.sendTextData (snd client) msg
+        sendToAllClients' msg = broadcast msg state
+        sendToActor' msg = sendToClient 0 msg state
+        sendToReactor' msg = sendToClient 1 msg state
+        sendToAllClientsExceptSender' msg = broadcastExceptSender msg client state
+        
+        actorName = fst $ head state
+        clientName = fst client
+        parameter = getParameterOfMessage message
+        command = getCommandOfMessage message 
 
 
 sendToSenderClient :: WS.Connection -> Text -> IO ()
@@ -262,15 +261,11 @@ sendToAllClientsExceptSender :: MVar ServerState -> Client -> Text -> IO ()
 sendToAllClientsExceptSender state client message = readMVar state >>= broadcastExceptSender message client
 
 
-rollDices :: MVar ServerState -> IO ()
-rollDices state = do
+rollDices :: (Text -> IO ()) -> IO ()
+rollDices func = do
     roll1 <- rollDice
     roll2 <- rollDice
-    --print $ rollo roll1 roll2
-    getRollDicesResult state roll1 roll2
-     
-
-getRollDicesResult :: MVar ServerState -> Int -> Int -> IO ()
-getRollDicesResult state roll1 roll2 = sendToActor state printout
-    where 
-        printout = pack $ show roll1 ++ show roll2
+    func $ formatDiceResult roll1 roll2
+    where
+        formatDiceResult roll1 roll2 = pack $ show roll1 ++ show roll2
+ 

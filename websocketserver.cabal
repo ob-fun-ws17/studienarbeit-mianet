@@ -57,6 +57,7 @@ executable websocketserver-exe
     , aeson
     , bytestring
     , random
+    , containers
   default-language: Haskell2010
 
 test-suite websocketserver-test

@@ -15,6 +15,9 @@ import Control.Concurrent (MVar, newMVar, modifyMVar_, modifyMVar, readMVar)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import qualified Network.WebSockets as WS
+import Data.Map (Map)
+import qualified Data.Map as Map
+
 
 type Client = (Text, WS.Connection)
 
@@ -25,6 +28,8 @@ type ServerState = [Client]
 newServerState :: ServerState
 newServerState = []
 
+lastDraw :: (Int, Int)
+lastDraw = (0, 0)
 
 numClients :: ServerState -> Int
 numClients = length
@@ -107,14 +112,15 @@ getClientName index clients = unpack $ fst $ (!!) clients index
 
 main :: IO ()
 main = do
+    lastDraw' <- newMVar lastDraw
     state <- newMVar newServerState
-    WS.runServer "127.0.0.1" 9000 $ application state
+    WS.runServer "127.0.0.1" 9000 $ application state lastDraw'
 
 
-application :: MVar ServerState -> WS.ServerApp
+application :: MVar ServerState -> MVar (Int, Int) -> WS.ServerApp
 
 
-application state pending = do
+application state lastDraw' pending = do
     conn <- WS.acceptRequest pending
     WS.forkPingThread conn 30
 
@@ -143,7 +149,7 @@ application state pending = do
 
             | command == "login" -> flip finally disconnect $ do
 
-
+               
                modifyMVar_ state $ \s -> do
                    let s' = addClient client s
                    WS.sendTextData conn $
@@ -152,7 +158,7 @@ application state pending = do
                    broadcast (fst client `mappend` " joined") s'
                    return s' 
                 
-               talk conn state client
+               talk conn state client lastDraw'
 
             | otherwise -> 
                 sendToSenderClient conn ("Unknown Action" :: Text)
@@ -169,9 +175,22 @@ application state pending = do
                     let s' = removeClient client s in return (s', s')
                 broadcast (fst client `mappend` " disconnected") s
 
+--(commandName, coundOfparameter)
+commands :: [(String, Int)]
+commands = [
+            ("rolldices", 0), 
+            ("chat", 1), 
+            ("actor", 1), 
+            ("reactor", 1), 
+            ("chatall", 1), 
+            ("list", 0),
+            ("list", 0),
+            ("logresult", 1),
+            ("nextdraw", 0)
+            ]
 
-talk :: WS.Connection -> MVar ServerState -> Client -> IO ()
-talk conn state (user, _) = forever $ do
+talk :: WS.Connection -> MVar ServerState -> Client -> MVar (Int, Int) -> IO ()
+talk conn state (user, _) lastDraw' = forever $ do
     clients <- readMVar state
     let clients' = clients
     
@@ -180,17 +199,20 @@ talk conn state (user, _) = forever $ do
     case (msg) of
         _   | any ($ pack command)
                 [T.null, T.any isPunctuation, T.any isSpace] ->
-                    WS.sendTextData conn ("parameter cannot " `mappend`
-                        "contain punctuation or whitespace, and " `mappend`
-                        "cannot be empty" :: Text)
-
-            | any ($ pack parameter)
-                [T.null, T.any isPunctuation, T.any isSpace] ->
                     WS.sendTextData conn ("command cannot " `mappend`
                         "contain punctuation or whitespace, and " `mappend`
                         "cannot be empty" :: Text)
-            
-            | command == "nextdraw" ->
+
+            | not (any (\x -> fst x == command) commands) ->
+                WS.sendTextData conn ("unknow command" :: Text)
+                
+            | if ((snd $ head $ filter (\x -> fst x == command) commands) > 0)
+                then any ($ pack parameter)
+                    [T.null] else False ->
+                        WS.sendTextData conn ("parameter cannot " `mappend`                        
+                            "be empty" :: Text)
+            --nextDraw    
+            | command == getCmdName 7 ->
                  modifyMVar_ state $ \s -> do
                      let s' = moveClient s
                      return s'
@@ -204,31 +226,42 @@ talk conn state (user, _) = forever $ do
             message = extractContainer messageContainer
             command = getCommandOfMessage message 
             parameter = getParameterOfMessage message
-            client     = (user, conn)            
+            client     = (user, conn)
+            getCmdName i = fst $ (!!) commands i            
 
 handleMessage :: MS.Message -> Client -> ServerState -> IO ()
 handleMessage message client state = 
     case command of
-        "rolldices" -> 
+        --rolldices
+     _  | (command == getCmdName 0) -> 
             if actorName == clientName
                 then rollDices sendToActor'
                 else sendToSenderClient' ("Du bist nicht am Zug" :: Text)
-        "chat" ->
+        --chat
+        | (command == getCmdName 1) -> 
             sendToAllClientsExceptSender' $ (fst client `mappend` ": " `mappend` pack parameter)
-
-        "actor" ->
+        
+        --actor
+        | (command == getCmdName 2) -> 
             sendToActor' $ (fst client `mappend` ": " `mappend` pack parameter)
-
-        "reactor" ->
+        
+        --reactor
+        | (command == getCmdName 3) -> 
             sendToReactor' $ (fst client `mappend` ": " `mappend` pack parameter)
-
-        "chatall" ->
+        
+        --chatall
+        | (command == getCmdName 4) -> 
             sendToAllClients' $ (fst client `mappend` ": " `mappend` pack parameter)
-
-        "list" -> 
+        
+        --list
+        | (command == getCmdName 5) -> 
             listClients state
 
-        _ -> sendToSenderClient' ("unknow command" :: Text)
+        --logresult
+        | (command == getCmdName 6) -> 
+            listClients state
+
+        | otherwise -> sendToSenderClient' ("unknow command" :: Text)
         --"chat" ->
             --sendToAllClients'
 
@@ -243,6 +276,8 @@ handleMessage message client state =
         clientName = fst client
         parameter = getParameterOfMessage message
         command = getCommandOfMessage message 
+        getCmdName i = fst $ (!!) commands i
+
 
 
 sendToSenderClient :: WS.Connection -> Text -> IO ()

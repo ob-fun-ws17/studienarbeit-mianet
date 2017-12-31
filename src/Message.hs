@@ -4,12 +4,13 @@ module Message
 ) where
 
 --------------------------------
-import           Control.Concurrent  (forkIO)
+import           Control.Concurrent  (forkIO, MVar, newMVar, modifyMVar_, modifyMVar, readMVar)
 import           Control.Monad       (forever, unless)
 import           Control.Monad.Trans (liftIO)
 import           Data.Text           (Text, unpack, pack)
+import           Data.List
 import           Data.List.Split
-import           Control.Applicative
+import           Control.Applicative as CA
 import           Data.Aeson
 import           GHC.Generics
 import qualified Data.Text           as T
@@ -23,7 +24,7 @@ data Message = Message {
 
 instance FromJSON Message where
     parseJSON (Object v) = Message <$> v .: "command" <*> v .: "parameter"
-    parseJSON _ = empty
+    parseJSON _ = CA.empty
 
 instance ToJSON Message where
     toJSON (Message cmd param) = object ["command" .= cmd, "parameter" .= param]
@@ -32,8 +33,40 @@ instance ToJSON Message where
 messageHandler :: Text -> String
 messageHandler msg = C.unpack message
     where message = encode $ Message { command = cmd, parameter = param }
-          cmd = head $ splitOn " " $ unpack msg
-          param = last $ splitOn " " $ unpack msg
+          cmd = head $ cmdLineParams
+          param = if (length cmdLineParams > 1) then (!!) cmdLineParams 1 else ""
+          cmdLineParams = getCmdLineParams (unpack msg)
+
+
+getCmdLineParams :: String -> [String]
+getCmdLineParams message = formatCmdLineParam $ foldl splitCmdLine ("", [], False) message
+
+--formatCmdLineParam $ foldl splitCmdLine ("", [], False) "halt 'stop was' hi 'hi enton' 'jimi hendrix' 'josh' wasss"
+splitCmdLine :: (String, [String], Bool) -> Char -> (String, [String], Bool)
+splitCmdLine (charArray, stringArray, doubleQuotes) char = 
+    if (doubleQuotes)
+        then
+            if (char /= '\'') 
+                then
+                    (char : charArray, stringArray, True)
+                else                    
+                    ([], charArray : stringArray, False) 
+        else  
+            if (char == ' ' || char == '\'') 
+                then 
+                    ([], charArray : stringArray, char') 
+                else 
+                    (char : charArray, stringArray, char') 
+    where 
+        char' = if (char == '\'') then True else False
+
+formatCmdLineParam :: (String, [String], Bool) -> [String]
+formatCmdLineParam (charArray, stringArray, doubleQuotes) = filteredResult
+                where
+                    stringArray' = map (\x -> reverse x) stringArray
+                    charArray' = reverse charArray
+                    reversedResult = reverse (charArray' : stringArray' )
+                    filteredResult = filter (\x -> x /= "") reversedResult
 
 jsonStringify :: C.ByteString -> String
 jsonStringify json = C.unpack json

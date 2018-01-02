@@ -28,8 +28,8 @@ type ServerState = [Client]
 newServerState :: ServerState
 newServerState = []
 
-lastDraw :: (Int, Int)
-lastDraw = (0, 0)
+lastDrawBase :: (Int, Int)
+lastDrawBase = (0, 0)
 
 numClients :: ServerState -> Int
 numClients = length
@@ -112,20 +112,20 @@ getClientName index clients = unpack $ fst $ (!!) clients index
 
 main :: IO ()
 main = do
-    lastDraw' <- newMVar lastDraw
-    state <- newMVar newServerState
-    WS.runServer "127.0.0.1" 9000 $ application state lastDraw'
+    lastDrawMVar <- newMVar lastDrawBase
+    stateMVar <- newMVar newServerState
+    WS.runServer "127.0.0.1" 9000 $ application stateMVar lastDrawMVar
 
 
 application :: MVar ServerState -> MVar (Int, Int) -> WS.ServerApp
 
 
-application state lastDraw' pending = do
+application stateMVar lastDrawMVar pending = do
     conn <- WS.acceptRequest pending
     WS.forkPingThread conn 30
 
     msg <- WS.receiveData conn
-    clients <- readMVar state
+    clients <- readMVar stateMVar
     
     case msg of
 
@@ -150,7 +150,7 @@ application state lastDraw' pending = do
             | command == "login" -> flip finally disconnect $ do
 
                
-               modifyMVar_ state $ \s -> do
+               modifyMVar_ stateMVar $ \s -> do
                    let s' = addClient client s
                    WS.sendTextData conn $
                        "Welcome! Users: " `mappend`
@@ -158,7 +158,7 @@ application state lastDraw' pending = do
                    broadcast (fst client `mappend` " joined") s'
                    return s' 
                 
-               talk conn state client lastDraw'
+               talk conn stateMVar client lastDrawMVar
 
             | otherwise -> 
                 sendToSenderClient conn ("Unknown Action" :: Text)
@@ -170,8 +170,8 @@ application state lastDraw' pending = do
             parameter = getParameterOfMessage message
             client     = (pack parameter, conn)
             disconnect = do
-                -- Remove client and return new state
-                s <- modifyMVar state $ \s ->
+                -- Remove client and return new stateMVar
+                s <- modifyMVar stateMVar $ \s ->
                     let s' = removeClient client s in return (s', s')
                 broadcast (fst client `mappend` " disconnected") s
 
@@ -185,13 +185,14 @@ commands = [
             ("chatall", 1), 
             ("list", 0),
             ("list", 0),
-            ("logresult", 1),
-            ("nextdraw", 0)
+            ("logfstresult", 0),
+            ("nextdraw", 0),
+            ("listresult", 0)
             ]
 
 talk :: WS.Connection -> MVar ServerState -> Client -> MVar (Int, Int) -> IO ()
-talk conn state (user, _) lastDraw' = forever $ do
-    clients <- readMVar state
+talk conn stateMVar (user, _) lastDrawMVar = forever $ do
+    clients <- readMVar stateMVar
     let clients' = clients
     
     msg <- WS.receiveData conn
@@ -211,14 +212,10 @@ talk conn state (user, _) lastDraw' = forever $ do
                     [T.null] else False ->
                         WS.sendTextData conn ("parameter cannot " `mappend`                        
                             "be empty" :: Text)
-            --nextDraw    
-            | command == getCmdName 7 ->
-                 modifyMVar_ state $ \s -> do
-                     let s' = moveClient s
-                     return s'
-             
-            | otherwise ->
-                readMVar state >>= handleMessage message client
+            
+            | otherwise -> do
+                handleMessage
+                --readMVar stateMVar >>= handleMessage message client lastDrawMVar'
                 --sendToSenderClient conn ("Unknown Action" :: Text)
 
           where
@@ -227,15 +224,23 @@ talk conn state (user, _) lastDraw' = forever $ do
             command = getCommandOfMessage message 
             parameter = getParameterOfMessage message
             client     = (user, conn)
-            getCmdName i = fst $ (!!) commands i            
+            getCmdName i = fst $ (!!) commands i   
+            handleMessage = do
+                state <- readMVar stateMVar  
+                lastDraw <- readMVar lastDrawMVar  
+                doHandleMessage message client (lastDraw, lastDrawMVar) (state, stateMVar)
+            
 
-handleMessage :: MS.Message -> Client -> ServerState -> IO ()
-handleMessage message client state = 
+doHandleMessage :: MS.Message -> Client -> ((Int, Int), MVar (Int, Int)) -> (ServerState, MVar ServerState) -> IO ()
+doHandleMessage message client (lastDraw, lastDrawMVar) (state, stateMVar)  = 
     case command of
         --rolldices
      _  | (command == getCmdName 0) -> 
             if actorName == clientName
-                then rollDices sendToActor'
+                then 
+                    if fst lastDraw == 0
+                        then rollDices (sendToActor') (lastDrawMVar)
+                        else sendToSenderClient' ("Du hast bereits gewürfelt" :: Text)    
                 else sendToSenderClient' ("Du bist nicht am Zug" :: Text)
         --chat
         | (command == getCmdName 1) -> 
@@ -257,13 +262,20 @@ handleMessage message client state =
         | (command == getCmdName 5) -> 
             listClients state
 
-        --logresult
-        | (command == getCmdName 6) -> 
-            listClients state
+        --logfstresult
+        | (command == getCmdName 7) -> 
+            logFstResult
+
+        --nextDraw    
+        | command == getCmdName 8 ->
+            nextDraw
+
+        --listresult
+        | (command == getCmdName 9) -> 
+            lastDrawContent
 
         | otherwise -> sendToSenderClient' ("unknow command" :: Text)
-        --"chat" ->
-            --sendToAllClients'
+        
 
     where 
         sendToSenderClient' msg = WS.sendTextData (snd client) msg
@@ -277,8 +289,21 @@ handleMessage message client state =
         parameter = getParameterOfMessage message
         command = getCommandOfMessage message 
         getCmdName i = fst $ (!!) commands i
+        lastDrawContent = do
+            result <- readMVar lastDrawMVar
+            print result
+                   
+        logFstResult = 
+            modifyMVar_ lastDrawMVar $ \s -> do
+                let s' = (1, 1)
+                return s'
 
-
+        nextDraw = 
+            modifyMVar_ stateMVar $ \s -> do
+                let s' = moveClient s
+                return s'
+                
+        
 
 sendToSenderClient :: WS.Connection -> Text -> IO ()
 sendToSenderClient conn message = WS.sendTextData conn (message :: Text) 
@@ -296,11 +321,28 @@ sendToAllClientsExceptSender :: MVar ServerState -> Client -> Text -> IO ()
 sendToAllClientsExceptSender state client message = readMVar state >>= broadcastExceptSender message client
 
 
-rollDices :: (Text -> IO ()) -> IO ()
-rollDices func = do
+rollDices :: (Text -> IO ()) -> MVar (Int, Int) -> IO ()
+rollDices sendFunc lastDrawMVar = do
     roll1 <- rollDice
     roll2 <- rollDice
-    func $ formatDiceResult roll1 roll2
-    where
-        formatDiceResult roll1 roll2 = pack $ show roll1 ++ show roll2
+    let nums = formatNums roll1 roll2     
+    result <- modifyMVar_ lastDrawMVar $ \s -> do
+        let s' = (nums , 0)
+        return s'    
+    sendFunc $ pack $ show nums
+            
+
+formatNums :: Int -> Int -> Int
+formatNums num1 num2 =
+    case (num1, num2) of
+      _ | (num1 > num2) ->
+            (10 * num1 + num2)
+        
+        | (num1 < num2) ->
+            (10 * num2 + num1)
+
+        | (num1 == num2) ->
+            10 * (10 * num1 + num2) 
+
+        
  

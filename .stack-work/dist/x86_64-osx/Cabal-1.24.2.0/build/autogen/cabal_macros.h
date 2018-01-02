@@ -14,6 +14,13 @@
   (major1) == 1 && (major2) <  1 || \
   (major1) == 1 && (major2) == 1 && (minor) <= 2)
 
+/* package array-0.5.1.1 */
+#define VERSION_array "0.5.1.1"
+#define MIN_VERSION_array(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  5 || \
+  (major1) == 0 && (major2) == 5 && (minor) <= 1)
+
 /* package base-4.9.1.0 */
 #define VERSION_base "4.9.1.0"
 #define MIN_VERSION_base(major1,major2,minor) (\
@@ -41,6 +48,20 @@
   (major1) <  2 || \
   (major1) == 2 && (major2) <  6 || \
   (major1) == 2 && (major2) == 6 && (minor) <= 3)
+
+/* package regex-base-0.93.2 */
+#define VERSION_regex_base "0.93.2"
+#define MIN_VERSION_regex_base(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  93 || \
+  (major1) == 0 && (major2) == 93 && (minor) <= 2)
+
+/* package regex-posix-0.95.2 */
+#define VERSION_regex_posix "0.95.2"
+#define MIN_VERSION_regex_posix(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  95 || \
+  (major1) == 0 && (major2) == 95 && (minor) <= 2)
 
 /* package split-0.2.3.2 */
 #define VERSION_split "0.2.3.2"
@@ -105,7 +126,7 @@
   (major1) == 0 && (major2) <  68 || \
   (major1) == 0 && (major2) == 68 && (minor) <= 1)
 
-#define CURRENT_COMPONENT_ID "websocketclient-0.1.0.0-FRb5LLr3zsECloWhc1MgyH"
+#define CURRENT_COMPONENT_ID "websocketclient-0.1.0.0-ImC50sbPPkj8ZBV3bn1fE1"
 
-#define CURRENT_PACKAGE_KEY "websocketclient-0.1.0.0-FRb5LLr3zsECloWhc1MgyH"
+#define CURRENT_PACKAGE_KEY "websocketclient-0.1.0.0-ImC50sbPPkj8ZBV3bn1fE1"
 

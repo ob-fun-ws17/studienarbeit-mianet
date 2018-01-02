@@ -13,6 +13,7 @@ import           Data.List.Split
 import           Control.Applicative as CA
 import           Data.Aeson
 import           GHC.Generics
+import           Text.Regex.Posix 
 import qualified Data.Text           as T
 import qualified Data.Text.IO        as T
 import qualified Data.ByteString.Lazy.Char8 as C

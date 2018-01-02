@@ -36,6 +36,9 @@ library
     , split
     , aeson
     , bytestring
+    , regex-posix
+    , array
+    , regex-base
   exposed-modules:
       Lib, Message
   default-language: Haskell2010
@@ -55,6 +58,7 @@ executable websocketclient-exe
     , split
     , aeson
     , bytestring
+    , regex-posix
   default-language: Haskell2010
 
 test-suite websocketclient-test

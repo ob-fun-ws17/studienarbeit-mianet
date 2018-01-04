@@ -7,6 +7,7 @@ module Main
 
 --------------------------------------------------------------------------------
 import           Message
+import           System.IO
 import           Control.Concurrent  (forkIO)
 import           Control.Monad       (forever, unless)
 import           Control.Monad.Trans (liftIO)
@@ -15,6 +16,7 @@ import           Data.Text           (Text, unpack, pack)
 import           Data.List.Split
 import           Control.Applicative
 import           Data.Aeson
+import           Data.Maybe
 import           GHC.Generics
 import qualified Data.Text           as T
 import qualified Data.Text.IO        as T
@@ -35,6 +37,7 @@ app conn = do
     -- Read from stdin and write to WS
     let loop = do
             line <- T.getLine
+            --line <- prompt
                       
             --json
             let unhandledMsg = if(unpack line /= "") then messageHandler line else "hallo"
@@ -54,6 +57,36 @@ app conn = do
 
 --------------------------------------------------------------------------------
 main :: IO ()
-main = withSocketsDo $ WS.runClient "127.0.0.1" 9000 "/" app
+main = do
+    server <- prompt "Server-Adresse eingeben: "
+    doIt server
+    where
+        doIt serv = do            
+            port <- prompt "Port-Nr. eingeben: "
+            if validPort port 
+                then
+                    withSocketsDo $ WS.runClient serv (read port :: Int) "/" app
+                else doIt serv
+    
+    --withSocketsDo $ WS.runClient "127.0.0.1" 9000 "/" app
+
+
+
+validPort :: String -> Bool
+validPort port = 
+    all (\x -> any (\y -> x == y) (intArrayToString [0..9])) port || length port == 0
+
+intArrayToString :: [Int] -> String
+intArrayToString myArray =
+    foldl addToString [] myArray
+    where 
+        addToString myArray element = (head $ show element) : myArray
+
+
+prompt :: String -> IO String
+prompt myString = do
+    putStr myString
+    hFlush stdout
+    getLine
         
 

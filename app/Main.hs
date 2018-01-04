@@ -1,7 +1,9 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
 module Main where
 import Rules
+import System.IO
 import Message as MS
+import Data.Maybe
 import Data.Char (isPunctuation, isSpace)
 import Data.Monoid (mappend)
 import Data.Text (Text, unpack, pack)
@@ -19,7 +21,7 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 
 
-type Client = (Text, WS.Connection)
+type Client = (Text, WS.Connection, Int)
 
 type ServerState = [Client]
 
@@ -45,7 +47,9 @@ actions = [
             ("nextdraw", 0),
             ("listresult", 0),
             ("logresult", 1),
-            ("accuse", 0)
+            ("accuse", 0),
+            ("getwin", 1),
+            ("getwinner", 0)
             ]
 
 newServerState :: ServerState
@@ -59,34 +63,39 @@ numClients :: ServerState -> Int
 numClients = length
 
 clientExists :: Client -> ServerState -> Bool
-clientExists client = any ((== fst client) . fst)
+clientExists client = any ((== fst' client) . fst')
 
 clientIsActor :: Client -> ServerState -> Bool
 clientIsActor client clients = argument1 == argument2
     where 
-        argument1 = fst client
-        argument2 = fst $ last clients
+        argument1 = fst' client
+        argument2 = fst' $ last clients
 
 clientIsActor' :: Client -> ServerState -> IO ()
 clientIsActor' client clients = print (show argument1 ++ show argument2)
     where 
-        argument1 = unpack $ fst client
-        argument2 = unpack $ fst $ head clients
+        argument1 = unpack $ fst' client
+        argument2 = unpack $ fst' $ head clients
 
 addClient :: Client -> ServerState -> ServerState
 addClient client clients = client : clients
 
 listClients :: ServerState -> IO ()
 listClients clients = 
-    forM_ clients $ \(name, _) -> print name
+    forM_ clients $ \(name, _, _) -> print name
 
 removeClient :: Client -> ServerState -> ServerState
 removeClient client clients = 
-    filter (\(a,_) -> a /= fst client) clients
+    filter (\(a,_, _) -> a /= fst' client) clients
+
+incrementWinCountForClient :: Text -> ServerState -> ServerState
+incrementWinCountForClient clientName clients = 
+    --filter (\(a,_, _) -> a /= clientName) clients
+    map (\(a, b, c) -> if a == clientName then (a, b, c + 1) else (a, b, c)) clients
 
 moveClient' :: ServerState -> IO ()
 moveClient' clients = 
-    forM_ newClients2 $ \(name, _) -> print name
+    forM_ newClients2 $ \(name, _, _) -> print name
     where 
         newClients1 = last clients : clients
         newClients2 = init newClients1
@@ -100,12 +109,12 @@ moveClient clients =
 broadcast :: Text -> ServerState -> IO ()
 broadcast message clients = do
     T.putStrLn message
-    forM_ clients $ \(_, conn) -> WS.sendTextData conn message
+    forM_ clients $ \(_, conn, _) -> WS.sendTextData conn message
 
 broadcastExceptSender :: Text -> Client -> ServerState -> IO ()
 broadcastExceptSender message client clients = do
     T.putStrLn message
-    forM_ newClients $ \(_, conn) -> WS.sendTextData conn message
+    forM_ newClients $ \(_, conn, _) -> WS.sendTextData conn message
     where 
         newClients = removeClient client clients
 
@@ -113,27 +122,50 @@ sendToClient :: Int -> Text -> ServerState -> IO ()
 sendToClient index message clients = do
     WS.sendTextData conn message
     where
-        conn = snd $ (!!) clients index
+        conn = snd' $ (!!) clients index
 
 sendToLastClient :: Text -> ServerState -> IO ()
 sendToLastClient message clients = do
     WS.sendTextData conn message
     where
-        conn = snd $ last clients
+        conn = snd' $ last clients
 
 getClientName :: Int -> ServerState -> String
-getClientName index clients = unpack $ fst $ (!!) clients index
+getClientName index clients = unpack $ fst' $ (!!) clients index
+
+prompt :: String -> IO String
+prompt myString = do
+    putStr myString
+    hFlush stdout
+    getLine
+
+validPort :: String -> Bool
+validPort port = 
+    all (\x -> any (\y -> x == y) (intArrayToString [0..9])) port || length port == 0
+
+intArrayToString :: [Int] -> String
+intArrayToString myArray =
+    foldl addToString [] myArray
+    where 
+        addToString myArray element = (head $ show element) : myArray
 
 main :: IO ()
 main = do
-    lastDrawMVar <- newMVar lastDrawBase
-    stateMVar <- newMVar newServerState
-    WS.runServer "127.0.0.1" 9000 $ application stateMVar lastDrawMVar
+    doIt
+    where 
+        doIt = do
+            port <- prompt "Port eingeben: "
+            if validPort port
+                then startServer port
+                else doIt
+        startServer port = do
+            lastDrawMVar <- newMVar lastDrawBase
+            stateMVar <- newMVar newServerState
+            WS.runServer "127.0.0.1" (read port) $ application stateMVar lastDrawMVar
+
 
 
 application :: MVar ServerState -> MVar Draw -> WS.ServerApp
-
-
 application stateMVar lastDrawMVar pending = do
     conn <- WS.acceptRequest pending
     WS.forkPingThread conn 30
@@ -158,7 +190,6 @@ application stateMVar lastDrawMVar pending = do
             | clientExists client clients ->
                 sendToSenderClient conn ("User already exists" :: Text)
 
-
             | command == "login" -> flip finally disconnect $ do
 
                
@@ -166,8 +197,8 @@ application stateMVar lastDrawMVar pending = do
                    let s' = addClient client s
                    WS.sendTextData conn $
                        "Welcome! Users: " `mappend`
-                       T.intercalate ", " (map fst s)
-                   broadcast (fst client `mappend` " joined") s'
+                       T.intercalate ", " (map fst' s)
+                   broadcast (fst' client `mappend` " joined") s'
                    return s' 
                 
                talk conn stateMVar client lastDrawMVar
@@ -180,15 +211,15 @@ application stateMVar lastDrawMVar pending = do
             message = extractContainer messageContainer
             command = getCommandOfMessage message 
             parameter = getParameterOfMessage message
-            client     = (pack parameter, conn)
+            client     = (pack parameter, conn, 0)
             disconnect = do
                 -- Remove client and return new stateMVar
                 s <- modifyMVar stateMVar $ \s ->
                     let s' = removeClient client s in return (s', s')
-                broadcast (fst client `mappend` " disconnected") s
+                broadcast (fst' client `mappend` " disconnected") s
 
 talk :: WS.Connection -> MVar ServerState -> Client -> MVar Draw -> IO ()
-talk conn stateMVar (user, _) lastDrawMVar = forever $ do
+talk conn stateMVar (user, _, win) lastDrawMVar = forever $ do
     clients <- readMVar stateMVar
     let clients' = clients
     
@@ -220,7 +251,7 @@ talk conn stateMVar (user, _) lastDrawMVar = forever $ do
             message = extractContainer messageContainer
             command = getCommandOfMessage message 
             parameter = getParameterOfMessage message
-            client     = (user, conn)
+            client     = (user, conn, win)
             getCmdName i = fst $ (!!) actions i   
             handleMessage = do
                 state <- readMVar stateMVar  
@@ -241,19 +272,19 @@ doHandleMessage message client (lastDraw, lastDrawMVar) (state, stateMVar)  =
                 else sendToSenderClient' ("Du bist nicht am Zug" :: Text)
         --chat
         | (command == getCmdName 1) -> 
-            sendToAllClientsExceptSender' $ (fst client `mappend` ": " `mappend` pack parameter)
+            sendToAllClientsExceptSender' $ (fst' client `mappend` ": " `mappend` pack parameter)
         
         --actor
         | (command == getCmdName 2) -> 
-            sendToActor' $ (fst client `mappend` ": " `mappend` pack parameter)
+            sendToActor' $ (fst' client `mappend` ": " `mappend` pack parameter)
         
         --reactor
         | (command == getCmdName 3) -> 
-            sendToReactor' $ (fst client `mappend` ": " `mappend` pack parameter)
+            sendToReactor' $ (fst' client `mappend` ": " `mappend` pack parameter)
         
         --chatall
         | (command == getCmdName 4) -> 
-            sendToAllClients' $ (fst client `mappend` ": " `mappend` pack parameter)
+            sendToAllClients' $ (fst' client `mappend` ": " `mappend` pack parameter)
         
         --list
         | (command == getCmdName 5) -> 
@@ -273,9 +304,14 @@ doHandleMessage message client (lastDraw, lastDrawMVar) (state, stateMVar)  =
     
                             | snd' lastDraw == 0 ->
                                 sendToReactor' (actorName `mappend` " hat sein Ergebnis nocht nicht eingeloggt")
+
+                            | snd' lastDraw == 0 ->
+                                sendToReactor' (actorName `mappend` " hat sein Ergebnis nocht nicht eingeloggt")
+
+                            
     
-                            | otherwise ->
-                                nextDraw 
+                            | otherwise -> 
+                                nextDraw $ snd' lastDraw
                     
                 else sendToSenderClient' ("du bist nicht der Reactor" :: Text)
 
@@ -289,7 +325,7 @@ doHandleMessage message client (lastDraw, lastDrawMVar) (state, stateMVar)  =
     
                             | snd' lastDraw == 0 ->
                                 sendToReactor' (actorName `mappend` " hat sein Ergebnis nocht nicht eingeloggt")
-    
+                                
                             | otherwise ->
                                 accuse 
                     
@@ -309,27 +345,36 @@ doHandleMessage message client (lastDraw, lastDrawMVar) (state, stateMVar)  =
                         | otherwise ->
                             logResult
                             
+                            
                          
                 else sendToSenderClient' ("du bist nicht am Zug" :: Text)
-                
+        
+        --accuse      
         | (command == getCmdName 11) ->
             accuse
+        
+        --getwin
+        | (command == getCmdName 12) -> do
+            let filterByName = filter (\(name, _, _) -> (==) name $ (pack parameter)) state
+            if length (filter (\(name, _, _) -> (==) name $ (pack parameter)) state) /= 0
+                then sendToSenderClient' $ pack $ show $ thd' $ head filterByName
+                else sendToSenderClient' ("User nicht vorhanden" :: Text)
 
         | otherwise -> sendToSenderClient' ("unknow command" :: Text)
         
 
     where 
-        sendToSenderClient' msg = WS.sendTextData (snd client) msg
+        sendToSenderClient' msg = WS.sendTextData (snd' client) msg
         sendToAllClients' msg = broadcast msg state
         sendToActor' msg = sendToClient 0 msg state
         sendToNextActor' msg = sendToLastClient msg state
         sendToReactor' msg = sendToClient 1 msg state
         sendToAllClientsExceptSender' msg = broadcastExceptSender msg client state
         
-        actorName = fst $ head state
-        clientName = fst client
-        reactorName = fst $ (!!) state 1
-        nextActorName = fst $ last state
+        actorName = fst' $ head state
+        clientName = fst' client
+        reactorName = fst' $ (!!) state 1
+        nextActorName = fst' $ last state
 
         parameter = getParameterOfMessage message
         command = getCommandOfMessage message 
@@ -343,11 +388,15 @@ doHandleMessage message client (lastDraw, lastDrawMVar) (state, stateMVar)  =
                 let s' = (1, 1, 1)
                 return s'
 
-        nextDraw = do
+        nextDraw lastRoundWin = do
+            modifyMVar_ lastDrawMVar $ \s -> do   
+                if lastRoundWin == 2100
+                    then do                        
+                        sendToActor' $ pack (accuseDefaultMessage `mappend` ". Du gewinnst")
+                        return (0, 0, 0)
+                    else 
+                        return (0, 0, lastRoundWin) 
             moveToNextDraw
-            modifyMVar_ lastDrawMVar $ \s -> do
-                let s' = (0, 0, snd' s)
-                return s'
             sendToNextActor' "Du bist am Zug"
         
         moveToNextDraw =
@@ -360,34 +409,52 @@ doHandleMessage message client (lastDraw, lastDrawMVar) (state, stateMVar)  =
             if validResult
                 then do  
                     let loggedResult' = formatNums (head loggedResult) ((!!) loggedResult 1)
-                    sendToReactor' $ 
-                        actorName `mappend` 
-                        " hat gewürfelt. Würfelergebnis: " `mappend` 
-                        (pack $ show loggedResult') `mappend`
-                        ". Lüge? (ja: accuse / nein: nextdraw)"
-                    modifyMVar_ lastDrawMVar $ \s -> do
-                        let s' = (fst' s, loggedResult', 0)
-                        return s'
-                else print "unvalid result"
+                    if loggedResult' <= thd' lastDraw
+                        then do
+                            sendToActor' $ pack ("Error: Eingeloggtes Ergebnis muss " ++
+                                "größer sein als das Ergebnis der letzten Runde (" ++
+                                (show $ deformatNums $ thd' lastDraw) ++ ").")
+                        else do
+                            sendToReactor' $ pack
+                                ((unpack actorName) ++
+                                " hat gewürfelt. Würfelergebnis: " ++
+                                (show $ deformatNums $ loggedResult') ++
+                                ". Ergebnis der letzten Runde: " ++
+                                (show $ deformatNums $ thd' lastDraw) ++
+                                ". Lüge? (ja: accuse / nein: nextdraw)")
+                            modifyMVar_ lastDrawMVar $ \s -> do
+                                let s' = (fst' s, loggedResult', thd' s)
+                                return s'
+                else sendToActor' "unvalid result"
                 
             
         validResult = (length parameter == 2) && (all (\x -> any (\y -> y == x) dice) parameter)
         loggedResult = foldl addToListWithConv ([] :: [Int]) parameter
         accuse = do
-            if fst' lastDraw == thd' lastDraw && fst' lastDraw == snd' lastDraw
+            if fst' lastDraw > thd' lastDraw && fst' lastDraw == snd' lastDraw
                 then do
                     sendToActor' $ pack (accuseDefaultMessage `mappend` ". Du gewinnst")
                     sendToReactor' $ pack (accuseDefaultMessage `mappend` ". Du verlierst")
+                    modifyMVar_ stateMVar $ \s -> do
+                        let s' = incrementWinCountForClient actorName s
+                        return s'
+                    --nextDraw 0
                     --sendToAllClients' nextActorName `mappend` " ist am Zug."
                 else do
                     sendToActor' $ pack (accuseDefaultMessage `mappend` ". Du verlierst")
                     sendToReactor' $ pack (accuseDefaultMessage `mappend` ". Du gewinnst")
+                    modifyMVar_ stateMVar $ \s -> do
+                        let s' = incrementWinCountForClient reactorName s
+                        return s'
+                    --nextDraw 0
 
-        accuseDefaultMessage = "zu übertreffendes Ergebnis: " `mappend` (show $ fst' lastDraw) `mappend`
-                        ". gewürfeltes Ergebnis: " `mappend` (show $ snd' lastDraw) `mappend`
-                        ". eingeloggtes Ergebnis: " `mappend` (show $ thd' lastDraw)
+            nextDraw 0
+
+        accuseDefaultMessage = "Ergebnis der letzten Runde: " `mappend` (show $ deformatNums $ thd' lastDraw) `mappend`
+                        ". gewürfeltes Ergebnis: " `mappend` (show $ deformatNums $ fst' lastDraw) `mappend`
+                        ". eingeloggtes Ergebnis: " `mappend` (show $ deformatNums $ snd' lastDraw)
         
-        
+       
 
 charToString :: Char -> String
 charToString c = [c]
@@ -395,22 +462,8 @@ charToString c = [c]
 addToListWithConv :: [Int] -> Char -> [Int]
 addToListWithConv myList myChar = (read (charToString myChar) :: Int) : myList               
         
-
 sendToSenderClient :: WS.Connection -> Text -> IO ()
 sendToSenderClient conn message = WS.sendTextData conn (message :: Text) 
-
-sendToAllClients :: MVar ServerState -> Text -> IO ()
-sendToAllClients state message = readMVar state >>= broadcast message
-
-sendToActor :: MVar ServerState -> Text -> IO ()
-sendToActor state message = readMVar state >>= sendToClient 0 message
-
-sendToReactor :: MVar ServerState -> Text -> IO ()
-sendToReactor state message = readMVar state >>= sendToClient 1 message
-
-sendToAllClientsExceptSender :: MVar ServerState -> Client -> Text -> IO ()
-sendToAllClientsExceptSender state client message = readMVar state >>= broadcastExceptSender message client
-
 
 rollDices :: (Text -> IO ()) -> MVar Draw -> IO ()
 rollDices sendFunc lastDrawMVar = do
@@ -420,13 +473,19 @@ rollDices sendFunc lastDrawMVar = do
     result <- modifyMVar_ lastDrawMVar $ \s -> do
         let s' = (nums , 0, thd' s)
         return s'    
-    sendFunc $ pack $ show nums
+    sendFunc $ pack $ show $ deformatNums $ nums
             
 
 formatNums :: Int -> Int -> Int
 formatNums num1 num2 =
     case (num1, num2) of
-      _ | (num1 > num2) ->
+      _ | (num1 == 1 && num2 == 2) ->
+            100 * (10 * num2 + num1)
+
+        | (num1 == 2 && num2 == 1) ->
+            100 * (10 * num1 + num2)
+        
+        | (num1 > num2) ->
             (10 * num1 + num2)
         
         | (num1 < num2) ->
@@ -435,12 +494,25 @@ formatNums num1 num2 =
         | (num1 == num2) ->
             10 * (10 * num1 + num2) 
 
+deformatNums :: Int -> Int
+deformatNums myNum =
+    case (myNum) of
+      _ | (myNum == 2100) ->
+            myNum `div` 100
+
+        | (myNum > 100) ->
+            myNum `div` 10
         
-fst' :: Draw -> Int
+        | otherwise ->
+            myNum
+
+
+
+fst' :: (a, b, c) -> a
 fst' (a, _, _) = a
 
-snd' :: Draw -> Int
-snd' (_, a, _) = a
+snd' :: (a, b, c) -> b
+snd' (_, b, _) = b
 
-thd' :: Draw -> Int
-thd' (_, _, a) = a
+thd' :: (a, b, c) -> c
+thd' (_, _, c) = c       

@@ -27,12 +27,13 @@ import qualified Data.ByteString.Lazy.Char8 as C
 --------------------------------------------------------------------------------
 app :: WS.ClientApp ()
 app conn = do
-    putStrLn "Connected!"
+    putStrLn "Bitte Login durchführen (login <username>)"
 
     -- Fork a thread that writes WS data to stdout
     _ <- forkIO $ forever $ do
         msg <- WS.receiveData conn
         liftIO $ T.putStrLn msg
+        
 
     -- Read from stdin and write to WS
     let loop = do
@@ -54,6 +55,7 @@ app conn = do
 
     loop
     WS.sendClose conn ("Bye!" :: Text)
+            
 
 --------------------------------------------------------------------------------
 main :: IO ()

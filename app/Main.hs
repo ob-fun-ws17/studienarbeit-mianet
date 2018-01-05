@@ -28,7 +28,9 @@ type ServerState = [Client]
 type Draw = (Int, Int, Int)
 
  --(commandName, coundOfparameter)
-type Action = [(String, Int)]
+type Action = [(String, Int, String)]
+
+type ActiveGame = Bool
 -----------------------------------------------------
 dice :: String
 dice = "123456"
@@ -36,20 +38,29 @@ dice = "123456"
            
 actions :: Action
 actions = [
-            ("rolldices", 0), 
-            ("chat", 1), 
-            ("actor", 1), 
-            ("reactor", 1), 
-            ("chatall", 1), 
-            ("list", 0),
-            ("list", 0),
-            ("logfstresult", 0),
-            ("nextdraw", 0),
-            ("listresult", 0),
-            ("logresult", 1),
-            ("accuse", 0),
-            ("getwin", 1),
-            ("getwinner", 0)
+            --1
+            ("help", 0, "User: All. Vorangegangenes Kommando: -. Descr:Hilfe anzeigen"),
+            --2
+            ("chat", 1, "User: All. Vorangegangenes Kommando: -. Descr: Nachricht an alle anderen Teilnehmer senden (Single-Quotes bei Sätzen)"), 
+            --3
+            ("actor", 1, "User: All. Vorangegangenes Kommando: -. Descr: Nachricht an Actor senden (Single-Quotes bei Sätzen)"), 
+            --4
+            ("reactor", 1, "User: All. Vorangegangenes Kommando: -. Descr: Nachricht an Actor senden (Single-Quotes bei Sätzen)"), 
+            --5
+            ("chatall", 1, "User: All. Vorangegangenes Kommando: -. Descr: Nachricht an alle Teilnehmer senden (Single-Quotes bei Sätzen)"), 
+            --6
+            ("rolldices", 0, "User: Actor. Vorangegangenes Kommando: -. Descr: Kommando zum Würfeln"), 
+            --7
+            ("getwin", 1, "User: All. Vorangegangenes Kommando: -. Descr: Ergebnis eines bestimmten Spielers abfragen"),
+            --8
+            ("help", 0, "User: All. Vorangegangenes Kommando: -. Descr:Hilfe anzeigen"),
+            --9
+            ("logresult", 1, "User: Actor. Vorangegangenes Kommando: rolldices. Descr: Würfelergebnis oder Lüge kann eingegeben werden (Eingabe > Ergebnis vorangegangener Runde)"),
+            --10
+            ("nextdraw", 0, "User: Reactor. Vorangegangenes Kommando: rolldices (Actor). Descr: Dem Actor wird geglaubt --> nächste Runde beginnt"),
+            --11
+            ("accuse", 0, "User: Reactor. Vorangegangenes Kommando: rolldices (Actor). Descr: Dem Actor wird nicht geglaubt --> Lüge: Punkt Reactor; Wahrheit: Punkt Actor"),
+            ("start", 0, "")
             ]
 
 newServerState :: ServerState
@@ -161,17 +172,20 @@ main = do
         startServer port = do
             lastDrawMVar <- newMVar lastDrawBase
             stateMVar <- newMVar newServerState
-            WS.runServer "127.0.0.1" (read port) $ application stateMVar lastDrawMVar
+            activeGameMVar <- newMVar False
+            WS.runServer "127.0.0.1" (read port) $ application stateMVar lastDrawMVar activeGameMVar
 
 
 
-application :: MVar ServerState -> MVar Draw -> WS.ServerApp
-application stateMVar lastDrawMVar pending = do
+application :: MVar ServerState -> MVar Draw -> MVar ActiveGame -> WS.ServerApp
+application stateMVar lastDrawMVar activeGameMVar pending = do
     conn <- WS.acceptRequest pending
     WS.forkPingThread conn 30
 
     msg <- WS.receiveData conn
     clients <- readMVar stateMVar
+
+    
     
     case msg of         
         _   | any ($ pack parameter)
@@ -191,18 +205,23 @@ application stateMVar lastDrawMVar pending = do
                 sendToSenderClient conn ("User already exists" :: Text)
 
             | command == "login" -> flip finally disconnect $ do
+               activeGame <- readMVar activeGameMVar
+               if not activeGame
+                then do               
+                    modifyMVar_ stateMVar $ \s -> do
+                        let s' = addClient client s
+                        WS.sendTextData conn $
+                            "Welcome! Users: " `mappend`
+                            T.intercalate ", " (map fst' s)
+                        broadcast (fst' client `mappend` " joined") s'
+                        return s' 
 
-               
-               modifyMVar_ stateMVar $ \s -> do
-                   let s' = addClient client s
-                   WS.sendTextData conn $
-                       "Welcome! Users: " `mappend`
-                       T.intercalate ", " (map fst' s)
-                   broadcast (fst' client `mappend` " joined") s'
-                   return s' 
+                    talk conn stateMVar client lastDrawMVar activeGameMVar
+                else sendToSenderClient conn "game already started"
                 
-               talk conn stateMVar client lastDrawMVar
+               
 
+                         
             | otherwise -> 
                 sendToSenderClient conn ("Unknown Action" :: Text)
 
@@ -218,8 +237,8 @@ application stateMVar lastDrawMVar pending = do
                     let s' = removeClient client s in return (s', s')
                 broadcast (fst' client `mappend` " disconnected") s
 
-talk :: WS.Connection -> MVar ServerState -> Client -> MVar Draw -> IO ()
-talk conn stateMVar (user, _, win) lastDrawMVar = forever $ do
+talk :: WS.Connection -> MVar ServerState -> Client -> MVar Draw -> MVar ActiveGame -> IO ()
+talk conn stateMVar (user, _, win) lastDrawMVar activeGameMVar = forever $ do
     clients <- readMVar stateMVar
     let clients' = clients
     
@@ -232,17 +251,33 @@ talk conn stateMVar (user, _, win) lastDrawMVar = forever $ do
                         "contain punctuation or whitespace, and " `mappend`
                         "cannot be empty" :: Text)
 
-            | not (any (\x -> fst x == command) actions) ->
+            | not (any (\x -> fst' x == command) actions) ->
                 WS.sendTextData conn ("unknow command" :: Text)
                 
-            | if ((snd $ head $ filter (\x -> fst x == command) actions) > 0)
+            | if ((snd' $ head $ filter (\x -> fst' x == command) actions) > 0)
                 then any ($ pack parameter)
                     [T.null] else False ->
                         WS.sendTextData conn ("parameter cannot " `mappend`                        
                             "be empty" :: Text)
+
+            | command == "start" -> do
+                activeGame <- readMVar activeGameMVar
+                if not activeGame
+                    then do
+                        state <- readMVar stateMVar
+                        if length state > 1
+                            then
+                                modifyMVar_ activeGameMVar $ \s -> do
+                                    let s' = True
+                                    return s'
+                            else sendToSenderClient conn "Es müssen mindestens 2 Spieler teilnehmen"
+                    else sendToSenderClient conn "Das Spiel wurde bereits gestartet"
             
             | otherwise -> do
-                handleMessage
+                activeGame <- readMVar activeGameMVar
+                if activeGame
+                    then handleMessage
+                    else sendToSenderClient conn "Das Spiel wurde noch nicht gestartet. Spiel starten (start)"
                 --readMVar stateMVar >>= handleMessage message client lastDrawMVar'
                 --sendToSenderClient conn ("Unknown Action" :: Text)
 
@@ -252,7 +287,7 @@ talk conn stateMVar (user, _, win) lastDrawMVar = forever $ do
             command = getCommandOfMessage message 
             parameter = getParameterOfMessage message
             client     = (user, conn, win)
-            getCmdName i = fst $ (!!) actions i   
+            getCmdName i = fst' $ (!!) actions i   
             handleMessage = do
                 state <- readMVar stateMVar  
                 lastDraw <- readMVar lastDrawMVar  
@@ -263,11 +298,11 @@ doHandleMessage :: MS.Message -> Client -> (Draw, MVar Draw) -> (ServerState, MV
 doHandleMessage message client (lastDraw, lastDrawMVar) (state, stateMVar)  = 
     case command of
         --rolldices
-     _  | (command == getCmdName 0) -> 
+     _  | (command == getCmdName 5) -> 
             if isActor
                 then 
                     if fst' lastDraw == 0
-                        then rollDices (sendToActor') (lastDrawMVar)
+                        then rollDices
                         else sendToSenderClient' ("Du hast bereits gewürfelt" :: Text)    
                 else sendToSenderClient' ("Du bist nicht am Zug" :: Text)
         --chat
@@ -285,17 +320,10 @@ doHandleMessage message client (lastDraw, lastDrawMVar) (state, stateMVar)  =
         --chatall
         | (command == getCmdName 4) -> 
             sendToAllClients' $ (fst' client `mappend` ": " `mappend` pack parameter)
-        
-        --list
-        | (command == getCmdName 5) -> 
-            listClients state
 
-        --logfstresult
-        | (command == getCmdName 7) -> 
-            logFstResult
 
         --nextdraw    
-        | command == getCmdName 8 ->
+        | command == getCmdName 9 ->
             if clientName == reactorName
                 then 
                     case lastDraw of
@@ -315,8 +343,8 @@ doHandleMessage message client (lastDraw, lastDrawMVar) (state, stateMVar)  =
                     
                 else sendToSenderClient' ("du bist nicht der Reactor" :: Text)
 
-        --listresult
-        | (command == getCmdName 9) -> 
+        --accuse
+        | (command == getCmdName 10) -> 
             if clientName == reactorName
                 then 
                     case lastDraw of
@@ -332,7 +360,7 @@ doHandleMessage message client (lastDraw, lastDrawMVar) (state, stateMVar)  =
                 else sendToSenderClient' ("du bist nicht der Reactor" :: Text)
         
         --logresult
-        | (command == getCmdName 10) -> 
+        | (command == getCmdName 8) -> 
             if isActor
                 then 
                     case lastDraw of
@@ -349,16 +377,18 @@ doHandleMessage message client (lastDraw, lastDrawMVar) (state, stateMVar)  =
                          
                 else sendToSenderClient' ("du bist nicht am Zug" :: Text)
         
-        --accuse      
-        | (command == getCmdName 11) ->
-            accuse
         
         --getwin
-        | (command == getCmdName 12) -> do
+        | (command == getCmdName 6) -> do
             let filterByName = filter (\(name, _, _) -> (==) name $ (pack parameter)) state
             if length (filter (\(name, _, _) -> (==) name $ (pack parameter)) state) /= 0
                 then sendToSenderClient' $ pack $ show $ thd' $ head filterByName
                 else sendToSenderClient' ("User nicht vorhanden" :: Text)
+
+        --help
+        | (command == getCmdName 0) -> do
+            help
+
 
         | otherwise -> sendToSenderClient' ("unknow command" :: Text)
         
@@ -378,16 +408,13 @@ doHandleMessage message client (lastDraw, lastDrawMVar) (state, stateMVar)  =
 
         parameter = getParameterOfMessage message
         command = getCommandOfMessage message 
-        getCmdName i = fst $ (!!) actions i
+        getCmdName i = fst' $ (!!) actions i
         lastDrawContent = do
             result <- readMVar lastDrawMVar
             print result
-                   
-        logFstResult = 
-            modifyMVar_ lastDrawMVar $ \s -> do
-                let s' = (1, 1, 1)
-                return s'
-
+        rollDices = do
+            nums <- rollDices' lastDrawMVar
+            sendToActor' $ pack $ "dein Würfelergebnis: " ++ (show $ deformatNums $ nums) ++ ". Ergebnis der letzten Runde: " ++ show (thd' lastDraw) ++ ". Ergebnis eingeben (logresult <würfelergebnis>)"
         nextDraw lastRoundWin = do
             modifyMVar_ lastDrawMVar $ \s -> do   
                 if lastRoundWin == 2100
@@ -397,7 +424,7 @@ doHandleMessage message client (lastDraw, lastDrawMVar) (state, stateMVar)  =
                     else 
                         return (0, 0, lastRoundWin) 
             moveToNextDraw
-            sendToNextActor' "Du bist am Zug"
+            sendToNextActor' "Du bist am Zug. Du musst Würfeln (rolldices)"
         
         moveToNextDraw =
             modifyMVar_ stateMVar $ \s -> do
@@ -453,6 +480,9 @@ doHandleMessage message client (lastDraw, lastDrawMVar) (state, stateMVar)  =
         accuseDefaultMessage = "Ergebnis der letzten Runde: " `mappend` (show $ deformatNums $ thd' lastDraw) `mappend`
                         ". gewürfeltes Ergebnis: " `mappend` (show $ deformatNums $ fst' lastDraw) `mappend`
                         ". eingeloggtes Ergebnis: " `mappend` (show $ deformatNums $ snd' lastDraw)
+
+        help = do
+            sendToSenderClient' $ pack $ concat $ map (\x -> fst' x ++ " --- " ++ thd' x ++ "\n") actions
         
        
 
@@ -465,15 +495,16 @@ addToListWithConv myList myChar = (read (charToString myChar) :: Int) : myList
 sendToSenderClient :: WS.Connection -> Text -> IO ()
 sendToSenderClient conn message = WS.sendTextData conn (message :: Text) 
 
-rollDices :: (Text -> IO ()) -> MVar Draw -> IO ()
-rollDices sendFunc lastDrawMVar = do
+rollDices' :: MVar Draw -> IO Int
+rollDices' lastDrawMVar = do
     roll1 <- rollDice
     roll2 <- rollDice
     let nums = formatNums roll1 roll2     
     result <- modifyMVar_ lastDrawMVar $ \s -> do
         let s' = (nums , 0, thd' s)
-        return s'    
-    sendFunc $ pack $ show $ deformatNums $ nums
+        return s'   
+    return nums 
+    --sendFunc $ pack $ "dein Würfelergebnis: " ++ (show $ deformatNums $ nums) ++ ". Ergebnis eingeben (logresult <würfelergebnis>)"
             
 
 formatNums :: Int -> Int -> Int

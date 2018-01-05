@@ -58,6 +58,7 @@ executable websocketserver-exe
     , bytestring
     , random
     , containers
+    , random-shuffle
   default-language: Haskell2010
 
 test-suite websocketserver-test

@@ -2,6 +2,7 @@
 module Main where
 import Rules
 import System.IO
+import System.Random.Shuffle
 import Message as MS
 import Data.Maybe
 import Data.Char (isPunctuation, isSpace)
@@ -135,6 +136,13 @@ sendToClient index message clients = do
     where
         conn = snd' $ (!!) clients index
 
+broadcastExceptOf :: Text -> [Text] -> ServerState -> IO ()
+broadcastExceptOf message exceptions clients = do
+    T.putStrLn message
+    forM_ newClients $ \(_, conn, _) -> WS.sendTextData conn message
+    where 
+        newClients = filter (\(name,_,_) -> not (any (\y -> name == y) exceptions)) clients
+
 sendToLastClient :: Text -> ServerState -> IO ()
 sendToLastClient message clients = do
     WS.sendTextData conn message
@@ -202,7 +210,7 @@ application stateMVar lastDrawMVar activeGameMVar pending = do
 
 
             | clientExists client clients ->
-                sendToSenderClient conn ("User already exists" :: Text)
+                sendToSenderClient conn ("Der User exisitiert bereits" :: Text)
 
             | command == "login" -> flip finally disconnect $ do
                activeGame <- readMVar activeGameMVar
@@ -211,9 +219,9 @@ application stateMVar lastDrawMVar activeGameMVar pending = do
                     modifyMVar_ stateMVar $ \s -> do
                         let s' = addClient client s
                         WS.sendTextData conn $
-                            "Welcome! Users: " `mappend`
+                            "Hallo! Teilnehmer: " `mappend`
                             T.intercalate ", " (map fst' s)
-                        broadcast (fst' client `mappend` " joined") s'
+                        broadcast (fst' client `mappend` " ist dem Spiel beigetreten. Spiel starten mit (start)") s'
                         return s' 
 
                     talk conn stateMVar client lastDrawMVar activeGameMVar
@@ -222,7 +230,7 @@ application stateMVar lastDrawMVar activeGameMVar pending = do
                
 
                          
-            | otherwise -> 
+            | otherwise -> do
                 sendToSenderClient conn ("Unknown Action" :: Text)
 
           where
@@ -260,17 +268,28 @@ talk conn stateMVar (user, _, win) lastDrawMVar activeGameMVar = forever $ do
                         WS.sendTextData conn ("parameter cannot " `mappend`                        
                             "be empty" :: Text)
 
-            | command == "start" -> do
+            --start
+            | command == getCmdName 11 -> do
                 activeGame <- readMVar activeGameMVar
                 if not activeGame
                     then do
                         state <- readMVar stateMVar
                         if length state > 1
-                            then
+                            then do                                                      
                                 modifyMVar_ activeGameMVar $ \s -> do
                                     let s' = True
                                     return s'
-                            else sendToSenderClient conn "Es müssen mindestens 2 Spieler teilnehmen"
+
+                                modifyMVar_ stateMVar $ \s -> do
+                                    s' <- shuffleM s
+                                    return s'
+                                
+                                order <- getOrder stateMVar
+                                state <- readMVar stateMVar
+                                sendToAllClients stateMVar "Spiel wurde gestartet!"
+                                sendToActor stateMVar "Du bist am Zug. Du musst Würfeln (rolldices)"
+                                sendToAllExceptActor stateMVar $ order `mappend` " warten..."
+                            else sendToSenderClient conn "Es müssen mindestens 2 Spieler teilnehmen. Spiel starten mit (start)"
                     else sendToSenderClient conn "Das Spiel wurde bereits gestartet"
             
             | otherwise -> do
@@ -400,6 +419,8 @@ doHandleMessage message client (lastDraw, lastDrawMVar) (state, stateMVar)  =
         sendToNextActor' msg = sendToLastClient msg state
         sendToReactor' msg = sendToClient 1 msg state
         sendToAllClientsExceptSender' msg = broadcastExceptSender msg client state
+        sendToAllExceptActorAndReactor' msg = broadcastExceptOf msg [actorName, reactorName] state
+        sendToAllExceptActor' msg = broadcastExceptOf msg [actorName] state
         
         actorName = fst' $ head state
         clientName = fst' client
@@ -415,6 +436,7 @@ doHandleMessage message client (lastDraw, lastDrawMVar) (state, stateMVar)  =
         rollDices = do
             nums <- rollDices' lastDrawMVar
             sendToActor' $ pack $ "dein Würfelergebnis: " ++ (show $ deformatNums $ nums) ++ ". Ergebnis der letzten Runde: " ++ show (thd' lastDraw) ++ ". Ergebnis eingeben (logresult <würfelergebnis>)"
+            sendToAllExceptActor' (actorName `mappend` " hat gewürfelt. warten ...")
         nextDraw lastRoundWin = do
             modifyMVar_ lastDrawMVar $ \s -> do   
                 if lastRoundWin == 2100
@@ -442,13 +464,18 @@ doHandleMessage message client (lastDraw, lastDrawMVar) (state, stateMVar)  =
                                 "größer sein als das Ergebnis der letzten Runde (" ++
                                 (show $ deformatNums $ thd' lastDraw) ++ ").")
                         else do
+                            order <- getOrder stateMVar
+                            let resultMessage = (unpack actorName) ++
+                                    " hat gewürfelt. Würfelergebnis: " ++
+                                    (show $ deformatNums $ loggedResult') ++
+                                    ". Ergebnis der letzten Runde: " ++
+                                    (show $ deformatNums $ thd' lastDraw)
+
                             sendToReactor' $ pack
-                                ((unpack actorName) ++
-                                " hat gewürfelt. Würfelergebnis: " ++
-                                (show $ deformatNums $ loggedResult') ++
-                                ". Ergebnis der letzten Runde: " ++
-                                (show $ deformatNums $ thd' lastDraw) ++
-                                ". Lüge? (ja: accuse / nein: nextdraw)")
+                                (resultMessage ++ ". Lüge? (ja: accuse / nein: nextdraw)")
+
+                            sendToAllExceptActorAndReactor stateMVar (pack $ resultMessage ++ ". " ++ (unpack order) ++ "warten...")
+
                             modifyMVar_ lastDrawMVar $ \s -> do
                                 let s' = (fst' s, loggedResult', thd' s)
                                 return s'
@@ -483,8 +510,31 @@ doHandleMessage message client (lastDraw, lastDrawMVar) (state, stateMVar)  =
 
         help = do
             sendToSenderClient' $ pack $ concat $ map (\x -> fst' x ++ " --- " ++ thd' x ++ "\n") actions
-        
-       
+
+getOrder :: MVar ServerState -> IO Text
+getOrder stateMVar = do
+    state <- readMVar stateMVar
+    return ("(" `mappend` (T.intercalate "->" (map (\x -> fst' x) state)) `mappend` ")")
+
+getActor :: MVar ServerState -> IO Client
+getActor stateMVar = do
+    state <- readMVar stateMVar
+    return $ head state
+
+getReactor :: MVar ServerState -> IO Client
+getReactor stateMVar = do
+    state <- readMVar stateMVar
+    return $ (!!) state 1
+
+getActorName :: MVar ServerState -> IO Text
+getActorName stateMVar = do   
+    actor <- getActor stateMVar 
+    return $ fst' $ actor
+
+getReactorName :: MVar ServerState -> IO Text
+getReactorName stateMVar = do   
+    reactor <- getReactor stateMVar 
+    return $ fst' $ reactor
 
 charToString :: Char -> String
 charToString c = [c]
@@ -494,6 +544,29 @@ addToListWithConv myList myChar = (read (charToString myChar) :: Int) : myList
         
 sendToSenderClient :: WS.Connection -> Text -> IO ()
 sendToSenderClient conn message = WS.sendTextData conn (message :: Text) 
+
+sendToActor :: MVar ServerState -> Text -> IO ()
+sendToActor stateMVar msg = do
+    state <- readMVar stateMVar
+    sendToClient 0 msg state
+
+sendToAllClients :: MVar ServerState -> Text -> IO ()
+sendToAllClients stateMVar msg = do
+    state <- readMVar stateMVar
+    broadcast msg state
+
+sendToAllExceptActor :: MVar ServerState -> Text -> IO ()
+sendToAllExceptActor stateMVar msg = do
+    state <- readMVar stateMVar
+    actor <- getActorName stateMVar
+    broadcastExceptOf msg [actor] state
+
+sendToAllExceptActorAndReactor :: MVar ServerState -> Text -> IO ()
+sendToAllExceptActorAndReactor stateMVar msg = do
+    state <- readMVar stateMVar
+    actor <- getActorName stateMVar
+    reactor <- getReactorName stateMVar
+    broadcastExceptOf msg [actor, reactor] state
 
 rollDices' :: MVar Draw -> IO Int
 rollDices' lastDrawMVar = do

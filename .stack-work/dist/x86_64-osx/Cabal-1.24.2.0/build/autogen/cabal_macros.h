@@ -49,6 +49,13 @@
   (major1) == 1 && (major2) <  1 || \
   (major1) == 1 && (major2) == 1 && (minor) <= 0)
 
+/* package random-shuffle-0.0.4 */
+#define VERSION_random_shuffle "0.0.4"
+#define MIN_VERSION_random_shuffle(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  0 || \
+  (major1) == 0 && (major2) == 0 && (minor) <= 4)
+
 /* package split-0.2.3.2 */
 #define VERSION_split "0.2.3.2"
 #define MIN_VERSION_split(major1,major2,minor) (\
@@ -76,13 +83,6 @@
   (major1) <  0 || \
   (major1) == 0 && (major2) <  5 || \
   (major1) == 0 && (major2) == 5 && (minor) <= 7)
-
-/* package random-shuffle-0.0.4 */
-#define VERSION_random_shuffle "0.0.4"
-#define MIN_VERSION_random_shuffle(major1,major2,minor) (\
-  (major1) <  0 || \
-  (major1) == 0 && (major2) <  0 || \
-  (major1) == 0 && (major2) == 0 && (minor) <= 4)
 
 /* tool gcc-4.2.1 */
 #define TOOL_VERSION_gcc "4.2.1"
@@ -126,7 +126,7 @@
   (major1) == 0 && (major2) <  68 || \
   (major1) == 0 && (major2) == 68 && (minor) <= 1)
 
-#define CURRENT_COMPONENT_ID "websocketserver-0.1.0.0-l1JOu2UTkWEhS4Ncsro3X"
+#define CURRENT_COMPONENT_ID "websocketserver-0.1.0.0-4GNu4KBIYaFSDBJw5T89U"
 
-#define CURRENT_PACKAGE_KEY "websocketserver-0.1.0.0-l1JOu2UTkWEhS4Ncsro3X"
+#define CURRENT_PACKAGE_KEY "websocketserver-0.1.0.0-4GNu4KBIYaFSDBJw5T89U"
 

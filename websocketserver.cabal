@@ -37,8 +37,9 @@ library
     , aeson
     , bytestring
     , random
+    , random-shuffle
   exposed-modules:
-      Lib, Message, Rules
+      Lib, Message, Dice, MianetDistributor, Types, Distributor, Helper, MianetGetter, MianetDraws, MianetGameHandler, MianetConstants
   default-language: Haskell2010
 
 executable websocketserver-exe

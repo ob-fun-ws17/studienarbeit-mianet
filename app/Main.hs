@@ -35,33 +35,39 @@ type ActiveGame = Bool
 -----------------------------------------------------
 dice :: String
 dice = "123456"
-
            
 actions :: Action
 actions = [
+            --0
+            ("help", 0, "User: All. Vorangegangenes Kommando: -. Descr:Hilfe anzeigen"),
             --1
-            ("help", 0, "User: All. Vorangegangenes Kommando: -. Descr:Hilfe anzeigen"),
-            --2
             ("chat", 1, "User: All. Vorangegangenes Kommando: -. Descr: Nachricht an alle anderen Teilnehmer senden (Single-Quotes bei Sätzen)"), 
-            --3
+            --2
             ("actor", 1, "User: All. Vorangegangenes Kommando: -. Descr: Nachricht an Actor senden (Single-Quotes bei Sätzen)"), 
-            --4
+            --3
             ("reactor", 1, "User: All. Vorangegangenes Kommando: -. Descr: Nachricht an Actor senden (Single-Quotes bei Sätzen)"), 
-            --5
+            --4
             ("chatall", 1, "User: All. Vorangegangenes Kommando: -. Descr: Nachricht an alle Teilnehmer senden (Single-Quotes bei Sätzen)"), 
-            --6
+            --5
             ("rolldices", 0, "User: Actor. Vorangegangenes Kommando: -. Descr: Kommando zum Würfeln"), 
-            --7
+            --6
             ("getwin", 1, "User: All. Vorangegangenes Kommando: -. Descr: Ergebnis eines bestimmten Spielers abfragen"),
-            --8
+            --7
             ("help", 0, "User: All. Vorangegangenes Kommando: -. Descr:Hilfe anzeigen"),
-            --9
+            --8
             ("logresult", 1, "User: Actor. Vorangegangenes Kommando: rolldices. Descr: Würfelergebnis oder Lüge kann eingegeben werden (Eingabe > Ergebnis vorangegangener Runde)"),
-            --10
+            --9
             ("nextdraw", 0, "User: Reactor. Vorangegangenes Kommando: rolldices (Actor). Descr: Dem Actor wird geglaubt --> nächste Runde beginnt"),
-            --11
+            --10
             ("accuse", 0, "User: Reactor. Vorangegangenes Kommando: rolldices (Actor). Descr: Dem Actor wird nicht geglaubt --> Lüge: Punkt Reactor; Wahrheit: Punkt Actor"),
-            ("start", 0, "")
+            --11
+            ("start", 0, ""),
+            --12
+            ("stop", 0, ""),
+            --13
+            ("closeGame", 0, ""),
+            --14
+            ("rematch", 0, "")
             ]
 
 newServerState :: ServerState
@@ -105,18 +111,8 @@ incrementWinCountForClient clientName clients =
     --filter (\(a,_, _) -> a /= clientName) clients
     map (\(a, b, c) -> if a == clientName then (a, b, c + 1) else (a, b, c)) clients
 
-moveClient' :: ServerState -> IO ()
-moveClient' clients = 
-    forM_ newClients2 $ \(name, _, _) -> print name
-    where 
-        newClients1 = last clients : clients
-        newClients2 = init newClients1
-
 moveClient :: ServerState -> ServerState
-moveClient clients =
-    init newClients1
-    where 
-        newClients1 = last clients : clients
+moveClient clients = tail clients ++ [head clients]
 
 broadcast :: Text -> ServerState -> IO ()
 broadcast message clients = do
@@ -170,23 +166,30 @@ intArrayToString myArray =
 
 main :: IO ()
 main = do
-    doIt
+    portConf
     where 
-        doIt = do
+        portConf = do
             port <- prompt "Port eingeben: "
             if validPort port
-                then startServer port
-                else doIt
-        startServer port = do
+                then scoreConf port
+                else portConf
+
+        scoreConf port = do
+            score <- prompt "Punkte (max): "
+            if validPort score
+                then startServer port score
+                else scoreConf port            
+            
+        startServer port score = do
             lastDrawMVar <- newMVar lastDrawBase
             stateMVar <- newMVar newServerState
             activeGameMVar <- newMVar False
-            WS.runServer "127.0.0.1" (read port) $ application stateMVar lastDrawMVar activeGameMVar
+            WS.runServer "127.0.0.1" (read port) $ application stateMVar lastDrawMVar activeGameMVar (read score)
 
 
 
-application :: MVar ServerState -> MVar Draw -> MVar ActiveGame -> WS.ServerApp
-application stateMVar lastDrawMVar activeGameMVar pending = do
+application :: MVar ServerState -> MVar Draw -> MVar ActiveGame -> Int -> WS.ServerApp
+application stateMVar lastDrawMVar activeGameMVar maxScore pending = do
     conn <- WS.acceptRequest pending
     WS.forkPingThread conn 30
 
@@ -224,7 +227,7 @@ application stateMVar lastDrawMVar activeGameMVar pending = do
                         broadcast (fst' client `mappend` " ist dem Spiel beigetreten. Spiel starten mit (start)") s'
                         return s' 
 
-                    talk conn stateMVar client lastDrawMVar activeGameMVar
+                    talk conn stateMVar client lastDrawMVar activeGameMVar maxScore
                 else sendToSenderClient conn "game already started"
                 
                
@@ -245,8 +248,8 @@ application stateMVar lastDrawMVar activeGameMVar pending = do
                     let s' = removeClient client s in return (s', s')
                 broadcast (fst' client `mappend` " disconnected") s
 
-talk :: WS.Connection -> MVar ServerState -> Client -> MVar Draw -> MVar ActiveGame -> IO ()
-talk conn stateMVar (user, _, win) lastDrawMVar activeGameMVar = forever $ do
+talk :: WS.Connection -> MVar ServerState -> Client -> MVar Draw -> MVar ActiveGame -> Int -> IO ()
+talk conn stateMVar (user, _, win) lastDrawMVar activeGameMVar maxScore = forever $ do
     clients <- readMVar stateMVar
     let clients' = clients
     
@@ -280,17 +283,28 @@ talk conn stateMVar (user, _, win) lastDrawMVar activeGameMVar = forever $ do
                                     let s' = True
                                     return s'
 
-                                modifyMVar_ stateMVar $ \s -> do
-                                    s' <- shuffleM s
-                                    return s'
+                                -- modifyMVar_ stateMVar $ \s -> do
+                                --     s' <- shuffleM s
+                                --     return s'
+                                shuffledStateMVar <- shuffleOrder stateMVar
                                 
-                                order <- getOrder stateMVar
-                                state <- readMVar stateMVar
-                                sendToAllClients stateMVar "Spiel wurde gestartet!"
-                                sendToActor stateMVar "Du bist am Zug. Du musst Würfeln (rolldices)"
-                                sendToAllExceptActor stateMVar $ order `mappend` " warten..."
+                                order <- getOrder shuffledStateMVar
+                                state <- readMVar shuffledStateMVar
+                                sendToAllClients shuffledStateMVar "Spiel wurde gestartet!"
+                                sendToActor shuffledStateMVar $ "Du bist am Zug. Du musst Würfeln (rolldices). " `mappend` order 
+                                sendToAllExceptActor shuffledStateMVar $ order `mappend` " warten..."
                             else sendToSenderClient conn "Es müssen mindestens 2 Spieler teilnehmen. Spiel starten mit (start)"
                     else sendToSenderClient conn "Das Spiel wurde bereits gestartet"
+
+            --closeGame
+            | (command == getCmdName 13) -> do
+                closeGame stateMVar activeGameMVar
+                resetLastDraw lastDrawMVar
+
+            --rematch
+            | (command == getCmdName 14) -> do
+                rematch stateMVar lastDrawMVar maxScore
+                
             
             | otherwise -> do
                 activeGame <- readMVar activeGameMVar
@@ -310,11 +324,11 @@ talk conn stateMVar (user, _, win) lastDrawMVar activeGameMVar = forever $ do
             handleMessage = do
                 state <- readMVar stateMVar  
                 lastDraw <- readMVar lastDrawMVar  
-                doHandleMessage message client (lastDraw, lastDrawMVar) (state, stateMVar)
-            
+                doHandleMessage message client (lastDraw, lastDrawMVar) (state, stateMVar) maxScore
 
-doHandleMessage :: MS.Message -> Client -> (Draw, MVar Draw) -> (ServerState, MVar ServerState) -> IO ()
-doHandleMessage message client (lastDraw, lastDrawMVar) (state, stateMVar)  = 
+
+doHandleMessage :: MS.Message -> Client -> (Draw, MVar Draw) -> (ServerState, MVar ServerState) -> Int -> IO ()
+doHandleMessage message client (lastDraw, lastDrawMVar) (state, stateMVar) maxScore  = 
     case command of
         --rolldices
      _  | (command == getCmdName 5) -> 
@@ -322,23 +336,23 @@ doHandleMessage message client (lastDraw, lastDrawMVar) (state, stateMVar)  =
                 then 
                     if fst' lastDraw == 0
                         then rollDices
-                        else sendToSenderClient' ("Du hast bereits gewürfelt" :: Text)    
-                else sendToSenderClient' ("Du bist nicht am Zug" :: Text)
+                        else sendToSenderClient clientConn ("Du hast bereits gewürfelt" :: Text)    
+                else sendToSenderClient clientConn ("Du bist nicht am Zug" :: Text)
         --chat
         | (command == getCmdName 1) -> 
-            sendToAllClientsExceptSender' $ (fst' client `mappend` ": " `mappend` pack parameter)
+            sendToAllClientsExceptSender client stateMVar $ (fst' client `mappend` ": " `mappend` pack parameter)
         
         --actor
         | (command == getCmdName 2) -> 
-            sendToActor' $ (fst' client `mappend` ": " `mappend` pack parameter)
+            sendToActor stateMVar $ (fst' client `mappend` ": " `mappend` pack parameter)
         
         --reactor
         | (command == getCmdName 3) -> 
-            sendToReactor' $ (fst' client `mappend` ": " `mappend` pack parameter)
+            sendToReactor stateMVar $ (fst' client `mappend` ": " `mappend` pack parameter)
         
         --chatall
         | (command == getCmdName 4) -> 
-            sendToAllClients' $ (fst' client `mappend` ": " `mappend` pack parameter)
+            sendToAllClients stateMVar $ (fst' client `mappend` ": " `mappend` pack parameter)
 
 
         --nextdraw    
@@ -347,36 +361,37 @@ doHandleMessage message client (lastDraw, lastDrawMVar) (state, stateMVar)  =
                 then 
                     case lastDraw of
                         _  | fst' lastDraw == 0 ->
-                                sendToReactor' (actorName `mappend` " hat noch nicht gewürfelt")
+                                sendToReactor stateMVar (actorName `mappend` " hat noch nicht gewürfelt")
     
                             | snd' lastDraw == 0 ->
-                                sendToReactor' (actorName `mappend` " hat sein Ergebnis nocht nicht eingeloggt")
+                                sendToReactor stateMVar (actorName `mappend` " hat sein Ergebnis nocht nicht eingeloggt")
 
                             | snd' lastDraw == 0 ->
-                                sendToReactor' (actorName `mappend` " hat sein Ergebnis nocht nicht eingeloggt")
+                                sendToReactor stateMVar (actorName `mappend` " hat sein Ergebnis nocht nicht eingeloggt")
 
                             
     
-                            | otherwise -> 
-                                nextDraw $ snd' lastDraw
+                            | otherwise -> do
+                                lastDraw <- readMVar lastDrawMVar
+                                nextDraw stateMVar lastDrawMVar (snd' lastDraw) maxScore 
                     
-                else sendToSenderClient' ("du bist nicht der Reactor" :: Text)
+                else sendToSenderClient clientConn ("du bist nicht der Reactor" :: Text)
 
         --accuse
         | (command == getCmdName 10) -> 
             if clientName == reactorName
                 then 
-                    case lastDraw of
+                    case lastDraw  of
                         _  | fst' lastDraw == 0 ->
-                                sendToReactor' (actorName `mappend` " hat noch nicht gewürfelt")
+                                sendToReactor stateMVar (actorName `mappend` " hat noch nicht gewürfelt")
     
                             | snd' lastDraw == 0 ->
-                                sendToReactor' (actorName `mappend` " hat sein Ergebnis nocht nicht eingeloggt")
-                                
+                                sendToReactor stateMVar (actorName `mappend` " hat sein Ergebnis nocht nicht eingeloggt")
+                                                        
                             | otherwise ->
-                                accuse 
+                                accuse stateMVar lastDrawMVar maxScore
                     
-                else sendToSenderClient' ("du bist nicht der Reactor" :: Text)
+                else sendToSenderClient clientConn ("du bist nicht der Reactor" :: Text)
         
         --logresult
         | (command == getCmdName 8) -> 
@@ -384,132 +399,237 @@ doHandleMessage message client (lastDraw, lastDrawMVar) (state, stateMVar)  =
                 then 
                     case lastDraw of
                     _  | fst' lastDraw == 0 ->
-                            sendToActor' "du musst noch würfeln"
+                            sendToActor stateMVar "du musst noch würfeln"
 
                         | snd' lastDraw /= 0 ->
-                            sendToActor' "du hast bereits dein Ergebnis eingeloggt"
+                            sendToActor stateMVar "du hast bereits dein Ergebnis eingeloggt"
 
                         | otherwise ->
-                            logResult
+                            logResult stateMVar lastDrawMVar parameter
                             
                             
                          
-                else sendToSenderClient' ("du bist nicht am Zug" :: Text)
+                else sendToSenderClient clientConn ("du bist nicht am Zug" :: Text)
         
         
         --getwin
         | (command == getCmdName 6) -> do
             let filterByName = filter (\(name, _, _) -> (==) name $ (pack parameter)) state
             if length (filter (\(name, _, _) -> (==) name $ (pack parameter)) state) /= 0
-                then sendToSenderClient' $ pack $ show $ thd' $ head filterByName
-                else sendToSenderClient' ("User nicht vorhanden" :: Text)
+                then sendToSenderClient clientConn $ pack $ show $ thd' $ head filterByName
+                else sendToSenderClient clientConn ("User nicht vorhanden" :: Text)
 
         --help
         | (command == getCmdName 0) -> do
-            help
+            help clientConn
 
-
-        | otherwise -> sendToSenderClient' ("unknow command" :: Text)
+        | otherwise -> sendToSenderClient clientConn ("unknow command" :: Text)
         
 
     where 
-        sendToSenderClient' msg = WS.sendTextData (snd' client) msg
-        sendToAllClients' msg = broadcast msg state
-        sendToActor' msg = sendToClient 0 msg state
-        sendToNextActor' msg = sendToLastClient msg state
-        sendToReactor' msg = sendToClient 1 msg state
-        sendToAllClientsExceptSender' msg = broadcastExceptSender msg client state
-        sendToAllExceptActorAndReactor' msg = broadcastExceptOf msg [actorName, reactorName] state
-        sendToAllExceptActor' msg = broadcastExceptOf msg [actorName] state
-        
+        clientConn = (snd' client)                   
         actorName = fst' $ head state
         clientName = fst' client
         reactorName = fst' $ (!!) state 1
-        nextActorName = fst' $ last state
-
         parameter = getParameterOfMessage message
         command = getCommandOfMessage message 
         getCmdName i = fst' $ (!!) actions i
-        lastDrawContent = do
-            result <- readMVar lastDrawMVar
-            print result
         rollDices = do
             nums <- rollDices' lastDrawMVar
-            sendToActor' $ pack $ "dein Würfelergebnis: " ++ (show $ deformatNums $ nums) ++ ". Ergebnis der letzten Runde: " ++ show (thd' lastDraw) ++ ". Ergebnis eingeben (logresult <würfelergebnis>)"
-            sendToAllExceptActor' (actorName `mappend` " hat gewürfelt. warten ...")
-        nextDraw lastRoundWin = do
-            modifyMVar_ lastDrawMVar $ \s -> do   
-                if lastRoundWin == 2100
-                    then do                        
-                        sendToActor' $ pack (accuseDefaultMessage `mappend` ". Du gewinnst")
-                        return (0, 0, 0)
-                    else 
-                        return (0, 0, lastRoundWin) 
-            moveToNextDraw
-            sendToNextActor' "Du bist am Zug. Du musst Würfeln (rolldices)"
+            sendToActor stateMVar $ pack $ "dein Würfelergebnis: " ++ (show $ deformatNums $ nums) ++ ". Ergebnis der letzten Runde: " ++ (show $ deformatNums $ thd' lastDraw) ++ ". Ergebnis eingeben (logresult <würfelergebnis>)"
+            sendToAllExceptActor stateMVar (actorName `mappend` " hat gewürfelt. warten ...")
         
-        moveToNextDraw =
-            modifyMVar_ stateMVar $ \s -> do
-                let s' = moveClient s
-                return s'  
-
         isActor = actorName == clientName
-        logResult = 
-            if validResult
-                then do  
-                    let loggedResult' = formatNums (head loggedResult) ((!!) loggedResult 1)
-                    if loggedResult' <= thd' lastDraw
-                        then do
-                            sendToActor' $ pack ("Error: Eingeloggtes Ergebnis muss " ++
-                                "größer sein als das Ergebnis der letzten Runde (" ++
-                                (show $ deformatNums $ thd' lastDraw) ++ ").")
-                        else do
-                            order <- getOrder stateMVar
-                            let resultMessage = (unpack actorName) ++
-                                    " hat gewürfelt. Würfelergebnis: " ++
-                                    (show $ deformatNums $ loggedResult') ++
-                                    ". Ergebnis der letzten Runde: " ++
-                                    (show $ deformatNums $ thd' lastDraw)
+        
+shuffleOrder :: MVar ServerState -> IO (MVar ServerState)
+shuffleOrder stateMVar = do
+    modifyMVar_ stateMVar $ \s -> do
+        s' <- shuffleM s
+        return s'
+    return stateMVar
 
-                            sendToReactor' $ pack
-                                (resultMessage ++ ". Lüge? (ja: accuse / nein: nextdraw)")
+rematch :: MVar ServerState -> MVar Draw -> Int -> IO ()
+rematch stateMVar lastDrawMVar maxScore = do
+    resetLastDraw lastDrawMVar
+    resetGamersScore stateMVar
+    shuffledStateMVar <- shuffleOrder stateMVar
+    nextDraw shuffledStateMVar lastDrawMVar 0 maxScore
+    
 
-                            sendToAllExceptActorAndReactor stateMVar (pack $ resultMessage ++ ". " ++ (unpack order) ++ "warten...")
+logResult :: MVar ServerState -> MVar Draw -> String -> IO ()
+logResult stateMVar lastDrawMVar parameter = 
+    if validResult parameter
+        then do  
+            lastDraw <- readMVar lastDrawMVar
+            let loggedResult' = formatNums (head loggedResult) ((!!) loggedResult 1)
+            if loggedResult' <= thd' lastDraw
+                then do
+                    lastDraw <- readMVar lastDrawMVar
+                    sendToActor stateMVar $ pack ("Error: Eingeloggtes Ergebnis muss " ++
+                        "größer sein als das Ergebnis der letzten Runde (" ++
+                        (show $ deformatNums $ thd' lastDraw) ++ ").")
+                else do
+                    lastDraw <- readMVar lastDrawMVar
+                    reactorN <- getReactorName stateMVar
+                    actorN <- getActorName stateMVar
+                    order <- getOrder stateMVar
+                    let resultMessage = (unpack actorN) ++
+                            " hat gewürfelt. Würfelergebnis: " ++
+                            (show $ deformatNums $ loggedResult') ++
+                            ". Ergebnis der letzten Runde: " ++
+                            (show $ deformatNums $ thd' lastDraw)
 
-                            modifyMVar_ lastDrawMVar $ \s -> do
-                                let s' = (fst' s, loggedResult', thd' s)
-                                return s'
-                else sendToActor' "unvalid result"
-                
-            
-        validResult = (length parameter == 2) && (all (\x -> any (\y -> y == x) dice) parameter)
-        loggedResult = foldl addToListWithConv ([] :: [Int]) parameter
-        accuse = do
+                    sendToReactor stateMVar $ pack (resultMessage ++ ". Lüge? (ja: accuse / nein: nextdraw)")
+
+                    sendToActor stateMVar $ "warten auf " `mappend` reactorN
+                    sendToAllExceptActorAndReactor stateMVar (pack $ resultMessage ++ ". " ++ (unpack order) ++ ". warten...")
+
+                    modifyMVar_ lastDrawMVar $ \s -> do
+                        let s' = (fst' s, loggedResult', thd' s)
+                        return s'
+        else sendToActor stateMVar "unvalid result"
+    where 
+        loggedResult = foldl addToListWithConv ([] :: [Int]) parameter 
+
+
+help :: WS.Connection -> IO ()
+help clientConn = do
+    sendToSenderClient clientConn $ pack $ concat $ map (\x -> fst' x ++ " --- " ++ thd' x ++ "\n") actions
+
+
+validResult :: String -> Bool
+validResult parameter = (length parameter == 2) && (all (\x -> any (\y -> y == x) dice) parameter)
+
+
+accuse :: MVar ServerState -> MVar Draw -> Int -> IO ()
+accuse stateMVar lastDrawMVar maxScore = do
+            lastDraw <- readMVar lastDrawMVar
             if fst' lastDraw > thd' lastDraw && fst' lastDraw == snd' lastDraw
                 then do
-                    sendToActor' $ pack (accuseDefaultMessage `mappend` ". Du gewinnst")
-                    sendToReactor' $ pack (accuseDefaultMessage `mappend` ". Du verlierst")
-                    modifyMVar_ stateMVar $ \s -> do
-                        let s' = incrementWinCountForClient actorName s
-                        return s'
-                    --nextDraw 0
-                    --sendToAllClients' nextActorName `mappend` " ist am Zug."
+                    defaultMessage <- accuseDefaultMessage lastDrawMVar 
+                    sendToActor stateMVar (defaultMessage `mappend` ". Runde beendet. Du gewinnst")
+                    sendToReactor stateMVar (defaultMessage `mappend` ". Runde beendet. Du verlierst")
+                    incrementScore stateMVar getActorName  
+                                   
                 else do
-                    sendToActor' $ pack (accuseDefaultMessage `mappend` ". Du verlierst")
-                    sendToReactor' $ pack (accuseDefaultMessage `mappend` ". Du gewinnst")
-                    modifyMVar_ stateMVar $ \s -> do
-                        let s' = incrementWinCountForClient reactorName s
-                        return s'
-                    --nextDraw 0
+                    defaultMessage <- accuseDefaultMessage lastDrawMVar
+                    sendToActor stateMVar (defaultMessage `mappend` ". Runde beendet. Du verlierst")
+                    sendToReactor stateMVar (defaultMessage `mappend` ". Runde beendet. Du gewinnst")
+                    incrementScore stateMVar getReactorName
+                    
+            nextDraw stateMVar lastDrawMVar 0 maxScore  
 
-            nextDraw 0
+incrementScore :: MVar ServerState -> (MVar ServerState -> IO Text) -> IO ()
+incrementScore stateMVar func = do
+    name <- func stateMVar
+    modifyMVar_ stateMVar $ \s -> do                        
+        let s' = incrementWinCountForClient name s
+        return s'
 
-        accuseDefaultMessage = "Ergebnis der letzten Runde: " `mappend` (show $ deformatNums $ thd' lastDraw) `mappend`
-                        ". gewürfeltes Ergebnis: " `mappend` (show $ deformatNums $ fst' lastDraw) `mappend`
-                        ". eingeloggtes Ergebnis: " `mappend` (show $ deformatNums $ snd' lastDraw)
+moveToNextDraw :: MVar ServerState -> IO (MVar ServerState)
+moveToNextDraw stateMVar = do
+    modifyMVar_ stateMVar $ \s -> do
+        let s' = moveClient s
+        return s' 
+    return stateMVar
 
-        help = do
-            sendToSenderClient' $ pack $ concat $ map (\x -> fst' x ++ " --- " ++ thd' x ++ "\n") actions
+
+accuseDefaultMessage :: MVar Draw -> IO Text
+accuseDefaultMessage lastDrawMVar = do
+    lastDraw <- readMVar lastDrawMVar
+    return
+        ("Ergebnis der letzten Runde: " `mappend` (pack $ show $ deformatNums $ thd' lastDraw) `mappend`
+        ". gewürfeltes Ergebnis: " `mappend` (pack $ show $ deformatNums $ fst' lastDraw) `mappend`
+        ". eingeloggtes Ergebnis: " `mappend` (pack $ show $ deformatNums $ snd' lastDraw))
+
+
+nextDraw :: MVar ServerState -> MVar Draw -> Int -> Int -> IO ()
+nextDraw stateMVar lastDrawMVar lastRoundWin maxScore = do
+    
+    if lastRoundWin == 2100
+        then do
+            defaultMessage <- accuseDefaultMessage lastDrawMVar 
+            sendToActor stateMVar ("Würfelergebnis: 21!. Runde beendet. Du gewinnst")
+            sendToReactor stateMVar ("Würfelergebnis: 21!. Runde beendet. Du verlierst")
+            incrementScore stateMVar getActorName 
+            endOfGame <- checkForWin stateMVar maxScore
+            doNextDraw endOfGame stateMVar
+        else do
+            endOfGame <- checkForWin stateMVar maxScore
+            doNextDraw endOfGame stateMVar
+
+    where 
+        doNextDraw endOfGame stateMVar = do
+            if not endOfGame
+                then do
+                    modifyMVar_ lastDrawMVar $ \s -> do   
+                        if lastRoundWin == 2100
+                            then do  
+                                --defaultMessage <- accuseDefaultMessage lastDrawMVar  
+                                --incrementScore stateMVar getActorName                   
+                                --sendToActor stateMVar (defaultMessage `mappend` ". Runde beendet. Du gewinnst")
+                                return (0, 0, 0)
+                            else 
+                                return (0, 0, lastRoundWin) 
+                    
+                    stateMVar' <- moveToNextDraw stateMVar
+                    order <- getOrder stateMVar
+                    sendToActor stateMVar' $ "Du bist am Zug. Du musst Würfeln (rolldices). " `mappend` order 
+                    sendToAllExceptActor stateMVar' $ order `mappend` " warten..."
+                else do
+                    endOfGameFunc stateMVar maxScore
+
+
+closeGame :: MVar ServerState -> MVar ActiveGame -> IO ()
+closeGame stateMVar activeGameMVar = do
+    sendToAllClients stateMVar "Auf Wiedersehen!"
+    modifyMVar_ stateMVar $ \s -> do                        
+        let s' = []
+        return s'
+    modifyMVar_ activeGameMVar $ \s -> do                        
+        let s' = False
+        return s'
+
+resetLastDraw :: MVar Draw -> IO ()
+resetLastDraw lastDrawMVar = do
+    modifyMVar_ lastDrawMVar $ \s -> do
+        let s' = (0, 0, 0)
+        return s'
+
+resetGamersScore :: MVar ServerState -> IO ()
+resetGamersScore stateMVar = do
+    modifyMVar_ stateMVar $ \s -> do
+        let s' = map (\(a, b, c) -> (a, b, c - c)) s
+        return s'
+
+getWinner :: MVar ServerState -> Int -> IO Client
+getWinner stateMVar maxScore = do
+    state <- readMVar stateMVar
+    let winner = head $ filter (\x -> thd' x == maxScore) state
+    return winner
+
+getwinnerName :: MVar ServerState -> Int -> IO Text
+getwinnerName stateMVar maxScore = do
+    winner <- getWinner stateMVar maxScore
+    let winnerName = fst' winner
+    return winnerName
+
+
+endOfGameFunc :: MVar ServerState -> Int -> IO ()
+endOfGameFunc stateMVar maxScore = do
+    state <- readMVar stateMVar
+    winnerName <- getwinnerName stateMVar maxScore
+    sendToWinner stateMVar maxScore "Spiel beendet. Du gewinnst!"
+    sendToLooser stateMVar maxScore ("Spiel beendet. " `mappend` winnerName `mappend` " hat gewonnen")
+    -- sendToActor stateMVar "Spiel beendet. Du gewinnst!"
+    -- broadcastExceptOf msg [actor] state  stateMVar ("Spiel beendet. " `mappend` actorN `mappend` " hat gewonnen") 
+    sendToAllClients stateMVar ("nochmal: (rematch). Spiel verlassen: (closeGame)") 
+
+
+checkForWin :: MVar ServerState -> Int -> IO Bool
+checkForWin stateMVar maxScore = do
+    state <- readMVar stateMVar
+    return (any (\(_, _, win) -> win == maxScore) state)
 
 getOrder :: MVar ServerState -> IO Text
 getOrder stateMVar = do
@@ -543,17 +663,28 @@ addToListWithConv :: [Int] -> Char -> [Int]
 addToListWithConv myList myChar = (read (charToString myChar) :: Int) : myList               
         
 sendToSenderClient :: WS.Connection -> Text -> IO ()
-sendToSenderClient conn message = WS.sendTextData conn (message :: Text) 
+sendToSenderClient conn message = do
+    WS.sendTextData conn (message :: Text) 
 
 sendToActor :: MVar ServerState -> Text -> IO ()
 sendToActor stateMVar msg = do
     state <- readMVar stateMVar
     sendToClient 0 msg state
 
+sendToReactor :: MVar ServerState -> Text -> IO ()
+sendToReactor stateMVar msg = do
+    state <- readMVar stateMVar
+    sendToClient 1 msg state
+
 sendToAllClients :: MVar ServerState -> Text -> IO ()
 sendToAllClients stateMVar msg = do
     state <- readMVar stateMVar
     broadcast msg state
+
+sendToAllClientsExceptSender :: Client -> MVar ServerState -> Text -> IO ()
+sendToAllClientsExceptSender client stateMVar msg = do
+    state <- readMVar stateMVar
+    broadcastExceptSender msg client state
 
 sendToAllExceptActor :: MVar ServerState -> Text -> IO ()
 sendToAllExceptActor stateMVar msg = do
@@ -568,6 +699,20 @@ sendToAllExceptActorAndReactor stateMVar msg = do
     reactor <- getReactorName stateMVar
     broadcastExceptOf msg [actor, reactor] state
 
+sendToWinner :: MVar ServerState -> Int -> Text -> IO ()
+sendToWinner stateMVar maxScore msg = do
+    state <- readMVar stateMVar
+    winner <- getWinner stateMVar maxScore
+    WS.sendTextData (snd' winner) msg
+
+sendToLooser :: MVar ServerState -> Int -> Text -> IO ()
+sendToLooser stateMVar maxScore msg = do
+    state <- readMVar stateMVar
+    winnerName <- getwinnerName stateMVar maxScore
+    broadcastExceptOf msg [winnerName] state
+    
+
+
 rollDices' :: MVar Draw -> IO Int
 rollDices' lastDrawMVar = do
     roll1 <- rollDice
@@ -577,7 +722,7 @@ rollDices' lastDrawMVar = do
         let s' = (nums , 0, thd' s)
         return s'   
     return nums 
-    --sendFunc $ pack $ "dein Würfelergebnis: " ++ (show $ deformatNums $ nums) ++ ". Ergebnis eingeben (logresult <würfelergebnis>)"
+    
             
 
 formatNums :: Int -> Int -> Int

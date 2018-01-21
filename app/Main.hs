@@ -1,6 +1,6 @@
 module Main where
 
-import Lib (tossDice, runUDPServer, sendMessage)
+import Lib (tossDice, receiveGameInfo, broadcastGameInfo)
 import Network.Socket
 import Network.Multicast
 import Control.Concurrent        (forkIO, threadDelay)
@@ -8,7 +8,7 @@ import Control.Concurrent        (forkIO, threadDelay)
 
 main :: IO ()
 main = do
-  _ <- forkIO $ runUDPServer
+  _ <- forkIO $ receiveGameInfo
   threadDelay 1000000 -- wait one second
 
 -- hSetBuffering stdout NoBuffering

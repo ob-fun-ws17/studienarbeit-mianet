@@ -1,8 +1,8 @@
 -- | A Lib module.
 module Lib
     ( tossDice
-    , sendMessage
-    , runUDPServer
+    , broadcastGameInfo
+    , receiveGameInfo
     ) where
 
 import System.Random
@@ -16,8 +16,8 @@ import Network.Socket.ByteString (recv, sendAll)
 tossDice :: RandomGen g => g -> [Char]
 tossDice g = take 1 (randomRs ('1', '6') g)
 
-sendMessage :: String -> IO ()
-sendMessage s = do
+broadcastGameInfo :: String -> IO ()
+broadcastGameInfo s = do
     addrinfos <- getAddrInfo Nothing (Just "255.255.255.255") (Just "9990")
     --addrinfos <- getAddrInfo Nothing (Just "0.0.0.0") (Just "9900")
     let serveraddr = head addrinfos
@@ -27,8 +27,8 @@ sendMessage s = do
     sendAll sock $ C.pack s
     close sock
 
-runUDPServer :: IO ()
-runUDPServer = do
+receiveGameInfo :: IO ()
+receiveGameInfo = do
   addrinfos <- getAddrInfo Nothing (Just "0.0.0.0") (Just "9990")
   let serveraddr = head addrinfos
   sock <- socket (addrFamily serveraddr) Datagram defaultProtocol

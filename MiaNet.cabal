@@ -16,11 +16,19 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     Lib
+                     , Main
   build-depends:       base >= 4.7 && < 5
                      , random
                      , network
                      , network-multicast
                      , bytestring
+                     , text
+                     , websockets
+                     , mtl
+                     , split
+                     , aeson
+                     , random
+                     , random-shuffle
   default-language:    Haskell2010
 
 executable MiaNet-exe
@@ -31,8 +39,15 @@ executable MiaNet-exe
                      , MiaNet
                      , random
                      , network
-                     , network-multicast
                      , bytestring
+                     , text
+                     , websockets
+                     , mtl
+                     , split
+                     , aeson
+                     , random
+                     , containers
+                     , random-shuffle
   default-language:    Haskell2010
 
 test-suite MiaNet-test
@@ -65,15 +80,15 @@ test-suite hlint
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   default-language:    Haskell2010
 
-benchmark criterion
-  type:                exitcode-stdio-1.0
-  hs-source-dirs:      benchmark
-  main-is:             Bench.hs
-  build-depends:       base
-                     , MiaNet
-                     , criterion
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
-  default-language:    Haskell2010
+--benchmark criterion
+--  type:                exitcode-stdio-1.0
+--  hs-source-dirs:      benchmark
+--  main-is:             Bench.hs
+--  build-depends:       base
+--                     , MiaNet
+--                     , criterion
+--  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+--  default-language:    Haskell2010
 
 source-repository head
   type:     git

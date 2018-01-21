@@ -22,14 +22,14 @@ import GHC.Generics
 import Control.Applicative
 import Control.Exception (finally)
 import Control.Monad (forM_, forever)
-import Control.Concurrent (MVar, newMVar, modifyMVar_, modifyMVar, readMVar)
+import Control.Concurrent (MVar, newMVar, modifyMVar_, modifyMVar, readMVar, forkIO)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import qualified Network.WebSockets as WS
+import Network.BSD
 import Data.Map (Map)
 import qualified Data.Map as Map
-
-
+import Lib (broadcastGameInfo)
 
 -----------------------------------------------------
 
@@ -71,9 +71,9 @@ main = do
             lastDrawMVar <- newMVar lastDrawBase
             stateMVar <- newMVar newServerState
             activeGameMVar <- newMVar False
+            hostName <- getHostName
+            _ <- forkIO $ forever (do broadcastGameInfo hostName)
             WS.runServer "127.0.0.1" (read port) $ application stateMVar lastDrawMVar activeGameMVar (read score)
-
-
 
 application :: MVar ServerState -> MVar Draw -> MVar ActiveGame -> Int -> WS.ServerApp
 application stateMVar lastDrawMVar activeGameMVar maxScore pending = do

@@ -19,13 +19,13 @@ tossDice g = take 1 (randomRs ('1', '6') g)
 broadcastGameInfo :: String -> IO ()
 broadcastGameInfo s = do
     addrinfos <- getAddrInfo Nothing (Just "255.255.255.255") (Just "9990")
-    --addrinfos <- getAddrInfo Nothing (Just "0.0.0.0") (Just "9900")
     let serveraddr = head addrinfos
     sock <- socket (addrFamily serveraddr) Datagram defaultProtocol
     setSocketOption sock Broadcast 1
     connect sock (addrAddress serveraddr)
     sendAll sock $ C.pack s
     close sock
+    threadDelay 1000000
 
 receiveGameInfo :: IO ()
 receiveGameInfo = do

@@ -1,7 +1,5 @@
-# MiaNet
-##(Mäxchen / Lügen) game over the network
-[![Build Status](https://travis-ci.org/ob-fun-ws17/studienarbeit-mianet.svg?branch=master)](https://travis-ci.org/ob-fun-ws17/studienarbeit-mianet)
-
+# MiaNet [![Build Status](https://travis-ci.org/ob-fun-ws17/studienarbeit-mianet.svg?branch=master)](https://travis-ci.org/ob-fun-ws17/studienarbeit-mianet)
+## (Mäxchen / Lügen) game over the network
 
 Sehen Sie sich den Code der Haskell-Applikation im Browser an unter:
 https://ob-fun-ws17.github.io/studienarbeit-mianet/

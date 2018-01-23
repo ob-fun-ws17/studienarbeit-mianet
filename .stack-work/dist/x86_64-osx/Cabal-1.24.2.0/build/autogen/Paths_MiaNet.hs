@@ -29,12 +29,12 @@ version :: Version
 version = Version [0,1,0,0] []
 bindir, libdir, dynlibdir, datadir, libexecdir, sysconfdir :: FilePath
 
-bindir     = "/Users/philipp/Documents/Semester5/funktionaleProgrammierung/project/studienarbeit-mianet/.stack-work/install/x86_64-osx/lts-9.10/8.0.2/bin"
-libdir     = "/Users/philipp/Documents/Semester5/funktionaleProgrammierung/project/studienarbeit-mianet/.stack-work/install/x86_64-osx/lts-9.10/8.0.2/lib/x86_64-osx-ghc-8.0.2/MiaNet-0.1.0.0-1KNtZhA3zGHEIbgOI8D02V"
-dynlibdir  = "/Users/philipp/Documents/Semester5/funktionaleProgrammierung/project/studienarbeit-mianet/.stack-work/install/x86_64-osx/lts-9.10/8.0.2/lib/x86_64-osx-ghc-8.0.2"
-datadir    = "/Users/philipp/Documents/Semester5/funktionaleProgrammierung/project/studienarbeit-mianet/.stack-work/install/x86_64-osx/lts-9.10/8.0.2/share/x86_64-osx-ghc-8.0.2/MiaNet-0.1.0.0"
-libexecdir = "/Users/philipp/Documents/Semester5/funktionaleProgrammierung/project/studienarbeit-mianet/.stack-work/install/x86_64-osx/lts-9.10/8.0.2/libexec"
-sysconfdir = "/Users/philipp/Documents/Semester5/funktionaleProgrammierung/project/studienarbeit-mianet/.stack-work/install/x86_64-osx/lts-9.10/8.0.2/etc"
+bindir     = "/Users/nils/Dropbox/Semester_5_Nils/Funktionale_Programmierung/studienarbeit-mianet/.stack-work/install/x86_64-osx/lts-9.17/8.0.2/bin"
+libdir     = "/Users/nils/Dropbox/Semester_5_Nils/Funktionale_Programmierung/studienarbeit-mianet/.stack-work/install/x86_64-osx/lts-9.17/8.0.2/lib/x86_64-osx-ghc-8.0.2/MiaNet-0.1.0.0-EDY4Kxn7XTb8nMYURSxZLN"
+dynlibdir  = "/Users/nils/Dropbox/Semester_5_Nils/Funktionale_Programmierung/studienarbeit-mianet/.stack-work/install/x86_64-osx/lts-9.17/8.0.2/lib/x86_64-osx-ghc-8.0.2"
+datadir    = "/Users/nils/Dropbox/Semester_5_Nils/Funktionale_Programmierung/studienarbeit-mianet/.stack-work/install/x86_64-osx/lts-9.17/8.0.2/share/x86_64-osx-ghc-8.0.2/MiaNet-0.1.0.0"
+libexecdir = "/Users/nils/Dropbox/Semester_5_Nils/Funktionale_Programmierung/studienarbeit-mianet/.stack-work/install/x86_64-osx/lts-9.17/8.0.2/libexec"
+sysconfdir = "/Users/nils/Dropbox/Semester_5_Nils/Funktionale_Programmierung/studienarbeit-mianet/.stack-work/install/x86_64-osx/lts-9.17/8.0.2/etc"
 
 getBinDir, getLibDir, getDynLibDir, getDataDir, getLibexecDir, getSysconfDir :: IO FilePath
 getBinDir = catchIO (getEnv "MiaNet_bindir") (\_ -> return bindir)

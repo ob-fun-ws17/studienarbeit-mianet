@@ -1,4 +1,5 @@
-# websocketserver
+# MiaNet
+##(Mäxchen / Lügen) game over the network
 [![Build Status](https://travis-ci.org/ob-fun-ws17/studienarbeit-mianet.svg?branch=master)](https://travis-ci.org/ob-fun-ws17/studienarbeit-mianet)
 
 ### Execute

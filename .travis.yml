@@ -25,6 +25,14 @@ install:
 script:
 - stack --no-terminal test --haddock --no-haddock-deps
 
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token: $GITHUB_TOKEN
+  local_dir: $HADDOCK_ROOT/doc/html/MiaNet
+  on:
+    branch: master
+
 notifications:
   email:
     on_success: never # default: change

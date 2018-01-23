@@ -4,8 +4,7 @@ import Language.Haskell.HLint (hlint)
 import System.Exit (exitFailure, exitSuccess)
 
 arguments :: [String]
-arguments = [ "benchmark"
-            , "app"
+arguments = [ "app"
             , "src"
             , "test" ]
 

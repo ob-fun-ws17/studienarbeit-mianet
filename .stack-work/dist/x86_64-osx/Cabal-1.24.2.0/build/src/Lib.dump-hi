@@ -1,0 +1,250 @@
+
+==================== FINAL INTERFACE ====================
+2018-01-23 19:34:11.503244 UTC
+
+interface MiaNet-0.1.0.0-EDY4Kxn7XTb8nMYURSxZLN:Lib 8002
+  interface hash: 095631c2bf20ef8804e7b39d2404e4e8
+  ABI hash: e72ab23e341034287a43e1a58a9546a4
+  export-list hash: 45d183cf9ce51c85d187eebc0171870c
+  orphan hash: 693e9af84d3dfcc71e640e005bdc5e2e
+  flag hash: f6624f22fcdd76ed0ac6625466e2d712
+  sig of: Nothing
+  used TH splices: False
+  where
+exports:
+  Lib.broadcastGameInfo
+  Lib.receiveGameInfo
+module dependencies:
+package dependencies: array-0.5.1.1@array-0.5.1.1 base-4.9.1.0
+                      bytestring-0.10.8.1@bytestring-0.10.8.1
+                      deepseq-1.4.2.0@deepseq-1.4.2.0 ghc-prim-0.5.0.0
+                      integer-gmp-1.0.0.1
+                      network-2.6.3.2@network-2.6.3.2-IsLM4TXcLoRI0fmmBYVyQz
+orphans: base-4.9.1.0:GHC.Base base-4.9.1.0:GHC.Float
+         network-2.6.3.2@network-2.6.3.2-IsLM4TXcLoRI0fmmBYVyQz:Network.Socket
+family instance modules: base-4.9.1.0:Control.Applicative
+                         base-4.9.1.0:Data.Complex base-4.9.1.0:Data.Either
+                         base-4.9.1.0:Data.Functor.Const base-4.9.1.0:Data.Functor.Identity
+                         base-4.9.1.0:Data.List.NonEmpty base-4.9.1.0:Data.Monoid
+                         base-4.9.1.0:Data.Semigroup base-4.9.1.0:Data.Type.Equality
+                         base-4.9.1.0:Data.Version base-4.9.1.0:Data.Void
+                         base-4.9.1.0:GHC.Exts base-4.9.1.0:GHC.Generics
+                         base-4.9.1.0:GHC.IO.Exception base-4.9.1.0:GHC.TypeLits
+import  -/  base-4.9.1.0:Control.Concurrent 2ee6a0a58489520b9a96d8fef10380fa
+import  -/  base-4.9.1.0:Control.Monad a6784c5dab0d75c63dabec5a37843f98
+import  -/  base-4.9.1.0:GHC.Base c4231c43c07e46080a26bf94094c7aa1
+import  -/  base-4.9.1.0:GHC.Conc.IO def2d34849634fa07308965605821da6
+import  -/  base-4.9.1.0:GHC.List ab8c4e523e6c479c549d3bcd5fc4a439
+import  -/  base-4.9.1.0:Prelude 22dd289b8469a8fa8dc81cab7b237771
+import  -/  base-4.9.1.0:System.Environment 08cb808e8e6a7821e6f8cfa76a977431
+import  -/  base-4.9.1.0:System.IO c9de64c5f5407c4cf1c52500c4d15200
+import  -/  bytestring-0.10.8.1@bytestring-0.10.8.1:Data.ByteString.Char8 04951c02f7879a7c7ead8468b2cdc233
+import  -/  ghc-prim-0.5.0.0:GHC.Types 89f8de4f08018c9177c98d979eae0e45
+import  -/  network-2.6.3.2@network-2.6.3.2-IsLM4TXcLoRI0fmmBYVyQz:Network.Socket 52f9b9614bf018ecf5fec5f2570dad23
+import  -/  network-2.6.3.2@network-2.6.3.2-IsLM4TXcLoRI0fmmBYVyQz:Network.Socket.ByteString 76c730219ba9b2aa4b3df5020ee2a55e
+import  -/  network-2.6.3.2@network-2.6.3.2-IsLM4TXcLoRI0fmmBYVyQz:Network.Socket.Types 2eb8a83dc42cc86a12e652ce3294cbda
+7721b2cd63fef2d5494e63bf173d5389
+  $trModule :: GHC.Types.Module
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.Module Lib.$trModule2 Lib.$trModule1) -}
+c13c5375b12272aed521c0c3103e0b51
+  $trModule1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS "Lib"#) -}
+e1d7a37455216179294be27cefd37eb1
+  $trModule2 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS
+                   "MiaNet-0.1.0.0-EDY4Kxn7XTb8nMYURSxZLN"#) -}
+e1b9bc6cb2140a00df36620ea6000cd7
+  broadcastGameInfo :: GHC.Base.String -> GHC.Types.IO ()
+  {- Arity: 2, Strictness: <L,U><S,U>,
+     Unfolding: InlineRule (0, True, True)
+                Lib.broadcastGameInfo1
+                  `cast`
+                (<GHC.Base.String>_R ->_R Sym (GHC.Types.N:IO[0] <()>_R)) -}
+717a3225b20ce1fe61b6d5eb7e4b9197
+  broadcastGameInfo1 ::
+    GHC.Base.String
+    -> GHC.Prim.State# GHC.Prim.RealWorld
+    -> (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
+  {- Arity: 2, Strictness: <L,U><S,U>,
+     Unfolding: (\ (s :: GHC.Base.String)
+                   (s1 :: GHC.Prim.State# GHC.Prim.RealWorld)[OneShot] ->
+                 case Network.Socket.getAddrInfo1
+                        (GHC.Base.Nothing @ Network.Socket.AddrInfo)
+                        Lib.broadcastGameInfo5
+                        Lib.broadcastGameInfo3
+                        s1 of ds1 { (#,#) ipv ipv1 ->
+                 case ipv1 of wild {
+                   []
+                   -> case GHC.List.badHead
+                      ret_ty (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
+                      of {}
+                   : x ds2
+                   -> case x of ww { Network.Socket.AddrInfo ww1 ww2 ww3 ww4 ww5 ww6 ->
+                      case Network.Socket.$wsocket
+                             ww2
+                             Network.Socket.Types.Datagram
+                             0#
+                             ipv of ds3 { (#,#) ipv2 ipv3 ->
+                      case ipv3 of ww7 { Network.Socket.Types.MkSocket ww8 ww9 ww10 ww11 ww12 ->
+                      case Network.Socket.$wsetSocketOption
+                             ww8
+                             Network.Socket.Broadcast
+                             Lib.broadcastGameInfo2
+                             ipv2 of ds4 { (#,#) ipv4 ipv5 ->
+                      case ww12 of ww13 { GHC.MVar.MVar ww14 ->
+                      case Network.Socket.$wconnect
+                             ww8
+                             ww14
+                             ww5
+                             ipv4 of ds5 { (#,#) ipv6 ipv7 ->
+                      case GHC.List.$wlenAcc @ GHC.Types.Char s 0# of ww15 { DEFAULT ->
+                      case Data.ByteString.Internal.$wunsafePackLenChars
+                             ww15
+                             s of ww16 { Data.ByteString.Internal.PS ww17 ww18 ww19 ww20 ->
+                      case Network.Socket.ByteString.$wsendAll
+                             ww8
+                             ww17
+                             ww18
+                             ww19
+                             ww20
+                             ipv6 of ds6 { (#,#) ipv8 ipv9 ->
+                      case Network.Socket.$wclose
+                             ww8
+                             ww14
+                             ipv8 of ds7 { (#,#) ipv10 ipv11 ->
+                      case {__pkg_ccall base-4.9.1.0 rtsSupportsBoundThreads GHC.Prim.State#
+                                                                               GHC.Prim.RealWorld
+                                                                             -> (# GHC.Prim.State#
+                                                                                     GHC.Prim.RealWorld,
+                                                                                   GHC.Prim.Int# #)}
+                             GHC.Prim.realWorld# of wild1 { (#,#) ds ds8 ->
+                      case ds8 of wild2 {
+                        DEFAULT -> GHC.Event.Thread.$wthreadDelay 1000000# ipv10
+                        0#
+                        -> case GHC.Prim.delay#
+                                  @ GHC.Prim.RealWorld
+                                  1000000#
+                                  ipv10 of s' { DEFAULT ->
+                           (# s', GHC.Tuple.() #) } } } } } } } } } } } } } } }) -}
+21c87f71a7a23ecf3501143445a5f6ca
+  broadcastGameInfo2 :: GHC.Types.Int
+  {- HasNoCafRefs, Strictness: m, Unfolding: (GHC.Types.I# 1#) -}
+f102b3ea982a1a376e9f256811169c1e
+  broadcastGameInfo3 :: GHC.Base.Maybe [GHC.Types.Char]
+  {- Unfolding: (GHC.Base.Just
+                   @ [GHC.Types.Char]
+                   Lib.broadcastGameInfo4) -}
+652031c97524eed62651ab7c161237da
+  broadcastGameInfo4 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "9990"#) -}
+fdcf51db6e5c09bdd3a31ca0d2473b32
+  broadcastGameInfo5 :: GHC.Base.Maybe [GHC.Types.Char]
+  {- Strictness: m2,
+     Unfolding: (GHC.Base.Just
+                   @ [GHC.Types.Char]
+                   Lib.broadcastGameInfo6) -}
+8c8f2a5c278606b9f4cbcadf6714e631
+  broadcastGameInfo6 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "255.255.255.255"#) -}
+c6a6f8a8edaab734c5e73891e36047de
+  receiveGameInfo :: GHC.Types.IO ()
+  {- Arity: 1, Strictness: <S,U>,
+     Unfolding: InlineRule (0, True, True)
+                Lib.receiveGameInfo1 `cast` (Sym (GHC.Types.N:IO[0] <()>_R)) -}
+b8d5e7de1180060da1b9645b6fab4de1
+  receiveGameInfo1 ::
+    GHC.Prim.State# GHC.Prim.RealWorld
+    -> (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
+  {- Arity: 1, Strictness: <S,U>,
+     Unfolding: (\ (s :: GHC.Prim.State# GHC.Prim.RealWorld)[OneShot] ->
+                 case Network.Socket.getAddrInfo1
+                        (GHC.Base.Nothing @ Network.Socket.AddrInfo)
+                        Lib.receiveGameInfo6
+                        Lib.broadcastGameInfo3
+                        s of ds1 { (#,#) ipv ipv1 ->
+                 case ipv1 of wild {
+                   []
+                   -> case GHC.List.badHead
+                      ret_ty (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
+                      of {}
+                   : x ds2
+                   -> case x of ww { Network.Socket.AddrInfo ww1 ww2 ww3 ww4 ww5 ww6 ->
+                      case Network.Socket.$wsocket
+                             ww2
+                             Network.Socket.Types.Datagram
+                             0#
+                             ipv of ds3 { (#,#) ipv2 ipv3 ->
+                      case ipv3 of ww7 { Network.Socket.Types.MkSocket ww8 ww9 ww10 ww11 ww12 ->
+                      case ww12 of ww13 { GHC.MVar.MVar ww14 ->
+                      case Network.Socket.$wbind
+                             ww8
+                             ww14
+                             ww5
+                             ipv2 of ds4 { (#,#) ipv4 ipv5 ->
+                      case GHC.IO.Handle.Text.hPutStr2
+                             GHC.IO.Handle.FD.stdout
+                             Lib.receiveGameInfo3
+                             GHC.Types.True
+                             ipv4 of ds5 { (#,#) ipv6 ipv7 ->
+                      case Network.Socket.ByteString.$wrecv
+                             ww7
+                             8096#
+                             ipv6 of ds6 { (#,#) ipv8 ipv9 ->
+                      case GHC.IO.Handle.Text.hPutStr2
+                             GHC.IO.Handle.FD.stdout
+                             (GHC.Types.:
+                                @ GHC.Types.Char
+                                GHC.Show.shows6
+                                (case ipv9 of ww15 { Data.ByteString.Internal.PS ww16 ww17 ww18 ww19 ->
+                                 GHC.Show.showLitString
+                                   (Data.ByteString.Internal.$wunpackAppendCharsLazy
+                                      ww16
+                                      ww17
+                                      ww18
+                                      ww19
+                                      (GHC.Types.[] @ GHC.Types.Char))
+                                   Lib.receiveGameInfo2 }))
+                             GHC.Types.True
+                             ipv8 of ds7 { (#,#) ipv10 ipv11 ->
+                      Network.Socket.$wclose ww8 ww14 ipv10 } } } } } } } } } }) -}
+942397a3bab89669ee58c432586abade
+  receiveGameInfo2 :: [GHC.Types.Char]
+  {- HasNoCafRefs,
+     Unfolding: (GHC.Types.:
+                   @ GHC.Types.Char
+                   GHC.Show.shows6
+                   (GHC.Types.[] @ GHC.Types.Char)) -}
+9c5a0a5fe4e64d34e380aea0c6bb8a2b
+  receiveGameInfo3 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.Types.:
+                   @ GHC.Types.Char
+                   GHC.Show.shows6
+                   Lib.receiveGameInfo4) -}
+cb69e8b4d0658215ad7e8769e12784d5
+  receiveGameInfo4 :: GHC.Base.String
+  {- Unfolding: (GHC.Show.showLitString
+                   Lib.receiveGameInfo5
+                   Lib.receiveGameInfo2) -}
+f70ae828252f210f3e21e29db77f7385
+  receiveGameInfo5 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString#
+                   "Looking for games..."#) -}
+89ace3ccb4e297f4593d7a1f62af77c0
+  receiveGameInfo6 :: GHC.Base.Maybe [GHC.Types.Char]
+  {- Unfolding: (GHC.Base.Just
+                   @ [GHC.Types.Char]
+                   Lib.receiveGameInfo7) -}
+df2fc2311fba38205b3180f8f1b5031f
+  receiveGameInfo7 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "0.0.0.0"#) -}
+vectorised variables:
+vectorised tycons:
+vectorised reused tycons:
+parallel variables:
+parallel tycons:
+trusted: none
+require own pkg trusted: False
+

@@ -1,13 +1,14 @@
 name:                MiaNet
 version:             0.1.0.0
-synopsis:            An example package.
+synopsis:            Mia (Mäxchen/ Lügen) game over the network package.
 description:         Package for the fp lecture project at hm.edu
 homepage:            https://github.com/ob-fun-ws17/studienarbeit-mianet#readme
 license:             BSD3
 license-file:        LICENSE
-author :             Engelbrecht Nils
+author:              Engelbrecht Nils
+                   , Phillip Mayer
 maintainer:          n.engelbrecht1@hm.edu
-copyright:           2017 Engelbrecht Nils
+copyright:           2017 Engelbrecht Nils & Phillip Mayer
 category:            Misc
 build-type:          Simple
 extra-source-files:  README.md
@@ -16,8 +17,28 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     Lib
+                     , Dice
+                     , Types
+                     , Distributor
+                     , Helper
+                     , Message
+                     , MianetConstants
+                     , MianetDraws
+                     , MianetGetter
+                     , MianetDistributor
+                     , MianetGameHandler
   build-depends:       base >= 4.7 && < 5
                      , random
+                     , network
+                     , network-multicast
+                     , bytestring
+                     , text
+                     , websockets
+                     , mtl
+                     , split
+                     , aeson
+                     , random
+                     , random-shuffle
   default-language:    Haskell2010
 
 executable MiaNet-exe
@@ -26,6 +47,17 @@ executable MiaNet-exe
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
                      , MiaNet
+                     , random
+                     , network
+                     , bytestring
+                     , text
+                     , websockets
+                     , mtl
+                     , split
+                     , aeson
+                     , random
+                     , containers
+                     , random-shuffle
   default-language:    Haskell2010
 
 test-suite MiaNet-test
@@ -34,39 +66,22 @@ test-suite MiaNet-test
   main-is:             Spec.hs
   build-depends:       base
                      , MiaNet
+                     , random
                      , hspec
                      , QuickCheck
+  other-modules:       LibSpec
+                     , DiceSpec
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   default-language:    Haskell2010
 
-test-suite doctest
-  type:                exitcode-stdio-1.0
-  hs-source-dirs:      test
-  main-is:             DocTest.hs
-  build-depends:       base
-                     , doctest
-                     , Glob
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
-  default-language:    Haskell2010
-
-test-suite hlint
-  type:                exitcode-stdio-1.0
-  hs-source-dirs:      test
-  main-is:             HLint.hs
-  build-depends:       base
-                     , hlint
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
-  default-language:    Haskell2010
-
-benchmark criterion
-  type:                exitcode-stdio-1.0
-  hs-source-dirs:      benchmark
-  main-is:             Bench.hs
-  build-depends:       base
-                     , MiaNet
-                     , criterion
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
-  default-language:    Haskell2010
+--test-suite hlint
+--  type:                exitcode-stdio-1.0
+--  hs-source-dirs:      test
+--  main-is:             HLint.hs
+--  build-depends:       base
+--                     , hlint
+--  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+--  default-language:    Haskell2010
 
 source-repository head
   type:     git

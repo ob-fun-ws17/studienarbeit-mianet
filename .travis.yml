@@ -1,0 +1,40 @@
+sudo: false
+
+language: generic
+
+cache:
+  directories:
+  - $HOME/.stack
+  - $HOME/.stack-work
+
+os:
+  - linux
+
+ghc:
+  - "7.10"
+  - "7.8"
+  - "7.6"
+
+before_install:
+- mkdir -p ~/.local/bin
+- export PATH=$HOME/.local/bin:$PATH
+- travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+
+install:
+- stack --no-terminal --install-ghc test --only-dependencies
+
+script:
+- stack --no-terminal test --haddock --no-haddock-deps
+
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token: $GITHUB_TOKEN
+  local_dir: $HADDOCK_ROOT/doc/html/MiaNet
+  on:
+    branch: master
+
+notifications:
+  email:
+    on_success: never # default: change
+    on_failure: always # default: always

@@ -7,6 +7,13 @@
   (major1) == 0 && (major2) <  1 || \
   (major1) == 0 && (major2) == 1 && (minor) <= 0)
 
+/* package aeson-1.1.2.0 */
+#define VERSION_aeson "1.1.2.0"
+#define MIN_VERSION_aeson(major1,major2,minor) (\
+  (major1) <  1 || \
+  (major1) == 1 && (major2) <  1 || \
+  (major1) == 1 && (major2) == 1 && (minor) <= 2)
+
 /* package base-4.9.1.0 */
 #define VERSION_base "4.9.1.0"
 #define MIN_VERSION_base(major1,major2,minor) (\
@@ -14,12 +21,96 @@
   (major1) == 4 && (major2) <  9 || \
   (major1) == 4 && (major2) == 9 && (minor) <= 1)
 
+/* package bytestring-0.10.8.1 */
+#define VERSION_bytestring "0.10.8.1"
+#define MIN_VERSION_bytestring(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  10 || \
+  (major1) == 0 && (major2) == 10 && (minor) <= 8)
+
+/* package mtl-2.2.1 */
+#define VERSION_mtl "2.2.1"
+#define MIN_VERSION_mtl(major1,major2,minor) (\
+  (major1) <  2 || \
+  (major1) == 2 && (major2) <  2 || \
+  (major1) == 2 && (major2) == 2 && (minor) <= 1)
+
+/* package network-2.6.3.2 */
+#define VERSION_network "2.6.3.2"
+#define MIN_VERSION_network(major1,major2,minor) (\
+  (major1) <  2 || \
+  (major1) == 2 && (major2) <  6 || \
+  (major1) == 2 && (major2) == 6 && (minor) <= 3)
+
+/* package network-multicast-0.2.0 */
+#define VERSION_network_multicast "0.2.0"
+#define MIN_VERSION_network_multicast(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  2 || \
+  (major1) == 0 && (major2) == 2 && (minor) <= 0)
+
 /* package random-1.1 */
 #define VERSION_random "1.1"
 #define MIN_VERSION_random(major1,major2,minor) (\
   (major1) <  1 || \
   (major1) == 1 && (major2) <  1 || \
   (major1) == 1 && (major2) == 1 && (minor) <= 0)
+
+/* package random-shuffle-0.0.4 */
+#define VERSION_random_shuffle "0.0.4"
+#define MIN_VERSION_random_shuffle(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  0 || \
+  (major1) == 0 && (major2) == 0 && (minor) <= 4)
+
+/* package split-0.2.3.2 */
+#define VERSION_split "0.2.3.2"
+#define MIN_VERSION_split(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  2 || \
+  (major1) == 0 && (major2) == 2 && (minor) <= 3)
+
+/* package text-1.2.2.2 */
+#define VERSION_text "1.2.2.2"
+#define MIN_VERSION_text(major1,major2,minor) (\
+  (major1) <  1 || \
+  (major1) == 1 && (major2) <  2 || \
+  (major1) == 1 && (major2) == 2 && (minor) <= 2)
+
+/* package websockets-0.10.0.0 */
+#define VERSION_websockets "0.10.0.0"
+#define MIN_VERSION_websockets(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  10 || \
+  (major1) == 0 && (major2) == 10 && (minor) <= 0)
+
+/* package containers-0.5.7.1 */
+#define VERSION_containers "0.5.7.1"
+#define MIN_VERSION_containers(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  5 || \
+  (major1) == 0 && (major2) == 5 && (minor) <= 7)
+
+/* package QuickCheck-2.9.2 */
+#define VERSION_QuickCheck "2.9.2"
+#define MIN_VERSION_QuickCheck(major1,major2,minor) (\
+  (major1) <  2 || \
+  (major1) == 2 && (major2) <  9 || \
+  (major1) == 2 && (major2) == 9 && (minor) <= 2)
+
+/* package hspec-2.4.4 */
+#define VERSION_hspec "2.4.4"
+#define MIN_VERSION_hspec(major1,major2,minor) (\
+  (major1) <  2 || \
+  (major1) == 2 && (major2) <  4 || \
+  (major1) == 2 && (major2) == 4 && (minor) <= 4)
+
+/* tool cpphs-1.20.8 */
+#define TOOL_VERSION_cpphs "1.20.8"
+#define MIN_TOOL_VERSION_cpphs(major1,major2,minor) (\
+  (major1) <  1 || \
+  (major1) == 1 && (major2) <  20 || \
+  (major1) == 1 && (major2) == 20 && (minor) <= 8)
 
 /* tool gcc-4.2.1 */
 #define TOOL_VERSION_gcc "4.2.1"
@@ -49,6 +140,13 @@
   (major1) == 2 && (major2) <  17 || \
   (major1) == 2 && (major2) == 17 && (minor) <= 3)
 
+/* tool happy-1.19.8 */
+#define TOOL_VERSION_happy "1.19.8"
+#define MIN_TOOL_VERSION_happy(major1,major2,minor) (\
+  (major1) <  1 || \
+  (major1) == 1 && (major2) <  19 || \
+  (major1) == 1 && (major2) == 19 && (minor) <= 8)
+
 /* tool hpc-0.67 */
 #define TOOL_VERSION_hpc "0.67"
 #define MIN_TOOL_VERSION_hpc(major1,major2,minor) (\
@@ -63,6 +161,13 @@
   (major1) == 0 && (major2) <  68 || \
   (major1) == 0 && (major2) == 68 && (minor) <= 1)
 
+/* tool hscolour-1.24 */
+#define TOOL_VERSION_hscolour "1.24"
+#define MIN_TOOL_VERSION_hscolour(major1,major2,minor) (\
+  (major1) <  1 || \
+  (major1) == 1 && (major2) <  24 || \
+  (major1) == 1 && (major2) == 24 && (minor) <= 0)
+
 /* tool pkg-config-0.29.2 */
 #define TOOL_VERSION_pkg_config "0.29.2"
 #define MIN_TOOL_VERSION_pkg_config(major1,major2,minor) (\
@@ -70,7 +175,7 @@
   (major1) == 0 && (major2) <  29 || \
   (major1) == 0 && (major2) == 29 && (minor) <= 2)
 
-#define CURRENT_COMPONENT_ID "MiaNet-0.1.0.0-1KNtZhA3zGHEIbgOI8D02V"
+#define CURRENT_COMPONENT_ID "MiaNet-0.1.0.0-EDY4Kxn7XTb8nMYURSxZLN"
 
-#define CURRENT_PACKAGE_KEY "MiaNet-0.1.0.0-1KNtZhA3zGHEIbgOI8D02V"
+#define CURRENT_PACKAGE_KEY "MiaNet-0.1.0.0-EDY4Kxn7XTb8nMYURSxZLN"
 

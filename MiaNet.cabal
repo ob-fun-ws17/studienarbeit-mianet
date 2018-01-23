@@ -16,7 +16,16 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     Lib
-                     , Main
+                     , Dice
+                     , Types
+                     , Distributor
+                     , Helper
+                     , Message
+                     , MianetConstants
+                     , MianetDraws
+                     , MianetGetter
+                     , MianetDistributor
+                     , MianetGameHandler
   build-depends:       base >= 4.7 && < 5
                      , random
                      , network

@@ -27,6 +27,7 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import qualified Network.WebSockets as WS
 import Network.BSD
+import Network.Socket hiding     (recv)
 import Data.Map (Map)
 import qualified Data.Map as Map
 import Lib (broadcastGameInfo)
@@ -72,6 +73,7 @@ main = do
             stateMVar <- newMVar newServerState
             activeGameMVar <- newMVar False
             hostName <- getHostName
+            -- addrinfo <- getAddrInfo Nothing (Just hostName) (Just port)
             _ <- forkIO $ forever (do broadcastGameInfo hostName)
             WS.runServer "127.0.0.1" (read port) $ application stateMVar lastDrawMVar activeGameMVar (read score)
 

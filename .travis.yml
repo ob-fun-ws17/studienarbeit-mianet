@@ -8,7 +8,11 @@ cache:
 
 os:
   - linux
-  - osx
+
+ghc:
+  - "7.10"
+  - "7.8"
+  - "7.6"
 
 before_install:
 - mkdir -p ~/.local/bin

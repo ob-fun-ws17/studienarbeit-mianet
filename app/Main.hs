@@ -1,5 +1,7 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
+-- | Main module.
 module Main where
+
 import Dice
 import Types
 import Helper
@@ -44,7 +46,6 @@ clientIsActor client clients = argument1 == argument2
         argument1 = fst' client
         argument2 = fst' $ last clients
 
-
 addClient :: Client -> ServerState -> ServerState
 addClient client clients = client : clients
 
@@ -52,7 +53,7 @@ listClients :: ServerState -> IO ()
 listClients clients =
     forM_ clients $ \(name, _, _) -> print name
 
-
+-- | Main method
 main :: IO ()
 main = do
     portConf
@@ -77,6 +78,7 @@ main = do
             threadId <- forkIO $ forever (do broadcastGameInfo $ hostName ++ ":" ++ port)
             WS.runServer "127.0.0.1" (read port) $ application stateMVar lastDrawMVar activeGameMVar (read score) threadId
 
+-- | A method to start the webserver.
 application :: MVar ServerState -> MVar Draw -> MVar ActiveGame -> Int -> ThreadId -> WS.ServerApp
 application stateMVar lastDrawMVar activeGameMVar maxScore threadId pending = do
     conn <- WS.acceptRequest pending
@@ -132,6 +134,7 @@ application stateMVar lastDrawMVar activeGameMVar maxScore threadId pending = do
                     let s' = removeClient client s in return (s', s')
                 broadcast (fst' client `mappend` " disconnected") s
 
+-- | The talk method.
 talk :: WS.Connection -> MVar ServerState -> Client -> MVar Draw -> MVar ActiveGame -> Int -> ThreadId ->IO ()
 talk conn stateMVar (user, _, win) lastDrawMVar activeGameMVar maxScore threadId= forever $ do
     clients <- readMVar stateMVar
@@ -170,6 +173,8 @@ talk conn stateMVar (user, _, win) lastDrawMVar activeGameMVar maxScore threadId
                                 -- modifyMVar_ stateMVar $ \s -> do
                                 --     s' <- shuffleM s
                                 --     return s'
+
+                                -- kills broadcasting threadId because game is being started
                                 killThread threadId
                                 shuffledStateMVar <- shuffleOrder stateMVar
 
@@ -181,12 +186,12 @@ talk conn stateMVar (user, _, win) lastDrawMVar activeGameMVar maxScore threadId
                             else sendToSenderClient conn "Es müssen mindestens 2 Spieler teilnehmen. Spiel starten mit (start)"
                     else sendToSenderClient conn "Das Spiel wurde bereits gestartet"
 
-            --closeGame
+            -- closeGame
             | (command == getCmdName 13) -> do
                 closeGame stateMVar activeGameMVar
                 resetLastDraw lastDrawMVar
 
-            --rematch
+            -- rematch
             | (command == getCmdName 14) -> do
                 rematch stateMVar lastDrawMVar maxScore
 
@@ -196,8 +201,8 @@ talk conn stateMVar (user, _, win) lastDrawMVar activeGameMVar maxScore threadId
                 if activeGame
                     then handleMessage
                     else sendToSenderClient conn "Das Spiel wurde noch nicht gestartet. Spiel starten (start)"
-                --readMVar stateMVar >>= handleMessage message client lastDrawMVar'
-                --sendToSenderClient conn ("Unknown Action" :: Text)
+                -- readMVar stateMVar >>= handleMessage message client lastDrawMVar'
+                -- sendToSenderClient conn ("Unknown Action" :: Text)
 
           where
             messageContainer = jsonToMessageContainer $ jsonParse $ unpack msg
@@ -211,11 +216,11 @@ talk conn stateMVar (user, _, win) lastDrawMVar activeGameMVar maxScore threadId
                 lastDraw <- readMVar lastDrawMVar
                 doHandleMessage message client (lastDraw, lastDrawMVar) (state, stateMVar) maxScore
 
-
+-- | handleMessage method.
 doHandleMessage :: MS.Message -> Client -> (Draw, MVar Draw) -> (ServerState, MVar ServerState) -> Int -> IO ()
 doHandleMessage message client (lastDraw, lastDrawMVar) (state, stateMVar) maxScore  =
     case command of
-        --rolldices
+        -- rolldices
      _  | (command == getCmdName 5) ->
             if isActor
                 then
@@ -223,24 +228,24 @@ doHandleMessage message client (lastDraw, lastDrawMVar) (state, stateMVar) maxSc
                         then rollDices
                         else sendToSenderClient clientConn ("Du hast bereits gewürfelt" :: Text)
                 else sendToSenderClient clientConn ("Du bist nicht am Zug" :: Text)
-        --chat
+        -- chat
         | (command == getCmdName 1) ->
             sendToAllClientsExceptSender client stateMVar $ (fst' client `mappend` ": " `mappend` pack parameter)
 
-        --actor
+        -- actor
         | (command == getCmdName 2) ->
             sendToActor stateMVar $ (fst' client `mappend` ": " `mappend` pack parameter)
 
-        --reactor
+        -- reactor
         | (command == getCmdName 3) ->
             sendToReactor stateMVar $ (fst' client `mappend` ": " `mappend` pack parameter)
 
-        --chatall
+        -- chatall
         | (command == getCmdName 4) ->
             sendToAllClients stateMVar $ (fst' client `mappend` ": " `mappend` pack parameter)
 
 
-        --nextdraw
+        -- nextdraw
         | command == getCmdName 9 ->
             if clientName == reactorName
                 then
@@ -262,7 +267,7 @@ doHandleMessage message client (lastDraw, lastDrawMVar) (state, stateMVar) maxSc
 
                 else sendToSenderClient clientConn ("du bist nicht der Reactor" :: Text)
 
-        --accuse
+        -- accuse
         | (command == getCmdName 10) ->
             if clientName == reactorName
                 then
@@ -278,7 +283,7 @@ doHandleMessage message client (lastDraw, lastDrawMVar) (state, stateMVar) maxSc
 
                 else sendToSenderClient clientConn ("du bist nicht der Reactor" :: Text)
 
-        --logresult
+        -- logresult
         | (command == getCmdName 8) ->
             if isActor
                 then
@@ -297,14 +302,14 @@ doHandleMessage message client (lastDraw, lastDrawMVar) (state, stateMVar) maxSc
                 else sendToSenderClient clientConn ("du bist nicht am Zug" :: Text)
 
 
-        --getwin
+        -- getwin
         | (command == getCmdName 6) -> do
             let filterByName = filter (\(name, _, _) -> (==) name $ (pack parameter)) state
             if length (filter (\(name, _, _) -> (==) name $ (pack parameter)) state) /= 0
                 then sendToSenderClient clientConn $ pack $ show $ thd' $ head filterByName
                 else sendToSenderClient clientConn ("User nicht vorhanden" :: Text)
 
-        --help
+        -- help
         | (command == getCmdName 0) -> do
             help clientConn
 
@@ -326,7 +331,7 @@ doHandleMessage message client (lastDraw, lastDrawMVar) (state, stateMVar) maxSc
 
         isActor = actorName == clientName
 
-
+-- | The help method.
 help :: WS.Connection -> IO ()
 help clientConn = do
     sendToSenderClient clientConn $ pack $ concat $ map (\x -> fst' x ++ " --- " ++ thd' x ++ "\n") actions

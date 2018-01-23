@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
+-- | A MianetDraws module.
 module MianetDraws
 where
 
@@ -30,12 +31,12 @@ accuse stateMVar lastDrawMVar maxScore = do
             if fst' lastDraw > thd' lastDraw && fst' lastDraw == snd' lastDraw
                 then do
                     actorName <- getActorName stateMVar
-                    defaultMessage <- getDefaultMessage lastDrawMVar 
+                    defaultMessage <- getDefaultMessage lastDrawMVar
                     sendToActor stateMVar (defaultMessage `mappend` ". Runde beendet. Du gewinnst")
                     sendToReactor stateMVar (defaultMessage `mappend` ". Runde beendet. Du verlierst")
                     sendToAllExceptActorAndReactor stateMVar (defaultMessage `mappend` ". Runde beendet. " `mappend` actorName `mappend` "gewinnt")
-                    incrementScore stateMVar getActorName  
-                                   
+                    incrementScore stateMVar getActorName
+
                 else do
                     reactorName <- getReactorName stateMVar
                     defaultMessage <- getDefaultMessage lastDrawMVar
@@ -43,54 +44,54 @@ accuse stateMVar lastDrawMVar maxScore = do
                     sendToReactor stateMVar (defaultMessage `mappend` ". Runde beendet. Du gewinnst")
                     sendToAllExceptActorAndReactor stateMVar (defaultMessage `mappend` ". Runde beendet. " `mappend` reactorName `mappend` " gewinnt")
                     incrementScore stateMVar getReactorName
-                    
-            nextDraw stateMVar lastDrawMVar 0 maxScore  
+
+            nextDraw stateMVar lastDrawMVar 0 maxScore
 
 
 incrementScore :: MVar ServerState -> (MVar ServerState -> IO Text) -> IO ()
 incrementScore stateMVar func = do
     name <- func stateMVar
-    modifyMVar_ stateMVar $ \s -> do                        
+    modifyMVar_ stateMVar $ \s -> do
         let s' = incrementWinCountForClient name s
         return s'
 
 incrementWinCountForClient :: Text -> ServerState -> ServerState
-incrementWinCountForClient clientName clients = 
+incrementWinCountForClient clientName clients =
     --filter (\(a,_, _) -> a /= clientName) clients
     map (\(a, b, c) -> if a == clientName then (a, b, c + 1) else (a, b, c)) clients
 
 nextDraw :: MVar ServerState -> MVar Draw -> Int -> Int -> IO ()
 nextDraw stateMVar lastDrawMVar lastRoundWin maxScore = do
-    
+
     if lastRoundWin == 2100
         then do
-            defaultMessage <- getDefaultMessage lastDrawMVar 
+            defaultMessage <- getDefaultMessage lastDrawMVar
             sendToActor stateMVar ("Würfelergebnis: 21!. Runde beendet. Du gewinnst")
             sendToAllExceptActor stateMVar ("Würfelergebnis: 21!. Runde beendet. Du verlierst")
-            incrementScore stateMVar getActorName 
+            incrementScore stateMVar getActorName
             endOfGame <- checkForWin stateMVar maxScore
             doNextDraw endOfGame stateMVar
         else do
             endOfGame <- checkForWin stateMVar maxScore
             doNextDraw endOfGame stateMVar
 
-    where 
+    where
         doNextDraw endOfGame stateMVar = do
             if not endOfGame
                 then do
-                    modifyMVar_ lastDrawMVar $ \s -> do   
+                    modifyMVar_ lastDrawMVar $ \s -> do
                         if lastRoundWin == 2100
-                            then do  
-                                --defaultMessage <- getDefaultMessage lastDrawMVar  
-                                --incrementScore stateMVar getActorName                   
+                            then do
+                                --defaultMessage <- getDefaultMessage lastDrawMVar
+                                --incrementScore stateMVar getActorName
                                 --sendToActor stateMVar (defaultMessage `mappend` ". Runde beendet. Du gewinnst")
                                 return (0, 0, 0)
-                            else 
-                                return (0, 0, lastRoundWin) 
-                    
+                            else
+                                return (0, 0, lastRoundWin)
+
                     stateMVar' <- moveToNextDraw stateMVar
                     order <- getOrder stateMVar
-                    sendToActor stateMVar' $ "Du bist am Zug. Du musst Würfeln (rolldices). " `mappend` order 
+                    sendToActor stateMVar' $ "Du bist am Zug. Du musst Würfeln (rolldices). " `mappend` order
                     sendToAllExceptActor stateMVar' $ order `mappend` " warten..."
                 else do
                     endOfGameFunc stateMVar maxScore
@@ -99,7 +100,7 @@ moveToNextDraw :: MVar ServerState -> IO (MVar ServerState)
 moveToNextDraw stateMVar = do
     modifyMVar_ stateMVar $ \s -> do
         let s' = moveClient s
-        return s' 
+        return s'
     return stateMVar
 
 
@@ -107,11 +108,11 @@ rollDices' :: MVar Draw -> IO Int
 rollDices' lastDrawMVar = do
     roll1 <- rollDice
     roll2 <- rollDice
-    let nums = formatNums roll1 roll2     
+    let nums = formatNums roll1 roll2
     result <- modifyMVar_ lastDrawMVar $ \s -> do
         let s' = (nums , 0, thd' s)
-        return s'   
-    return nums 
+        return s'
+    return nums
 
 checkForWin :: MVar ServerState -> Int -> IO Bool
 checkForWin stateMVar maxScore = do
@@ -126,14 +127,14 @@ endOfGameFunc stateMVar maxScore = do
     sendToWinner stateMVar maxScore "Spiel beendet. Du gewinnst!"
     sendToLooser stateMVar maxScore ("Spiel beendet. " `mappend` winnerName `mappend` " hat gewonnen")
     -- sendToActor stateMVar "Spiel beendet. Du gewinnst!"
-    -- broadcastExceptOf msg [actor] state  stateMVar ("Spiel beendet. " `mappend` actorN `mappend` " hat gewonnen") 
-    sendToAllClients stateMVar ("nochmal: (rematch). Spiel verlassen: (closeGame)") 
+    -- broadcastExceptOf msg [actor] state  stateMVar ("Spiel beendet. " `mappend` actorN `mappend` " hat gewonnen")
+    sendToAllClients stateMVar ("nochmal: (rematch). Spiel verlassen: (closeGame)")
 
 
 logResult :: MVar ServerState -> MVar Draw -> String -> IO ()
-logResult stateMVar lastDrawMVar parameter = 
+logResult stateMVar lastDrawMVar parameter =
     if validResult parameter
-        then do  
+        then do
             lastDraw <- readMVar lastDrawMVar
             let loggedResult' = formatNums (head loggedResult) ((!!) loggedResult 1)
             if loggedResult' <= thd' lastDraw
@@ -162,12 +163,11 @@ logResult stateMVar lastDrawMVar parameter =
                         let s' = (fst' s, loggedResult', thd' s)
                         return s'
         else sendToActor stateMVar "unvalid result"
-    where 
-        loggedResult = foldl addToListWithConv ([] :: [Int]) parameter 
+    where
+        loggedResult = foldl addToListWithConv ([] :: [Int]) parameter
 
 validResult :: String -> Bool
 validResult parameter = (length parameter == 2) && (all (\x -> any (\y -> y == x) dice) parameter)
 
 addToListWithConv :: [Int] -> Char -> [Int]
 addToListWithConv myList myChar = (read ([myChar]) :: Int) : myList
-

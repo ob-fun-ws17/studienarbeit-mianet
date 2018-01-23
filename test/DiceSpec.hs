@@ -1,5 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables #-}
-module LibSpec (spec) where
+module DiceSpec (spec) where
 
 import Dice (tossDice)
 import System.Random

@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
+-- | A Distributor module.
 module Distributor
 where
 
@@ -17,7 +18,7 @@ import qualified Data.Text.IO as T
 import qualified Network.WebSockets as WS
 
 removeClient :: Client -> ServerState -> ServerState
-removeClient client clients = 
+removeClient client clients =
     filter (\(a,_, _) -> a /= fst' client) clients
 
 broadcast :: Text -> ServerState -> IO ()
@@ -29,7 +30,7 @@ broadcastExceptSender :: Text -> Client -> ServerState -> IO ()
 broadcastExceptSender message client clients = do
     T.putStrLn message
     forM_ newClients $ \(_, conn, _) -> WS.sendTextData conn message
-    where 
+    where
         newClients = removeClient client clients
 
 sendToClient :: Int -> Text -> ServerState -> IO ()
@@ -42,7 +43,7 @@ broadcastExceptOf :: Text -> [Text] -> ServerState -> IO ()
 broadcastExceptOf message exceptions clients = do
     T.putStrLn message
     forM_ newClients $ \(_, conn, _) -> WS.sendTextData conn message
-    where 
+    where
         newClients = filter (\(name,_,_) -> not (any (\y -> name == y) exceptions)) clients
 
 sendToLastClient :: Text -> ServerState -> IO ()

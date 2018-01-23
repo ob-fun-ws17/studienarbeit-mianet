@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
+-- | A MianetGetter module.
 module MianetGetter
 where
 
@@ -18,43 +19,51 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import qualified Network.WebSockets as WS
 
+-- | getActor method.
 getActor :: MVar ServerState -> IO Client
 getActor stateMVar = do
     state <- readMVar stateMVar
     return $ head state
 
+-- | getReactor method.
 getReactor :: MVar ServerState -> IO Client
 getReactor stateMVar = do
     state <- readMVar stateMVar
     return $ (!!) state 1
 
+-- | getActorName method.
 getActorName :: MVar ServerState -> IO Text
-getActorName stateMVar = do   
-    actor <- getActor stateMVar 
+getActorName stateMVar = do
+    actor <- getActor stateMVar
     return $ fst' $ actor
 
+-- | getReactorName method.
 getReactorName :: MVar ServerState -> IO Text
-getReactorName stateMVar = do   
-    reactor <- getReactor stateMVar 
+getReactorName stateMVar = do
+    reactor <- getReactor stateMVar
     return $ fst' $ reactor
 
+-- | getWinner method.
 getWinner :: MVar ServerState -> Int -> IO Client
 getWinner stateMVar maxScore = do
     state <- readMVar stateMVar
     let winner = head $ filter (\x -> thd' x == maxScore) state
     return winner
 
+-- | getwinnerName method.
 getwinnerName :: MVar ServerState -> Int -> IO Text
 getwinnerName stateMVar maxScore = do
     winner <- getWinner stateMVar maxScore
     let winnerName = fst' winner
     return winnerName
 
+-- | getOrder method.
 getOrder :: MVar ServerState -> IO Text
 getOrder stateMVar = do
     state <- readMVar stateMVar
     return ("(" `mappend` (T.intercalate "->" (map (\x -> fst' x) state)) `mappend` ")")
 
+-- | getDefaultMessage method.
 getDefaultMessage :: MVar Draw -> IO Text
 getDefaultMessage lastDrawMVar = do
     lastDraw <- readMVar lastDrawMVar
@@ -63,6 +72,6 @@ getDefaultMessage lastDrawMVar = do
         ". gewürfeltes Ergebnis: " `mappend` (pack $ show $ deformatNums $ fst' lastDraw) `mappend`
         ". eingeloggtes Ergebnis: " `mappend` (pack $ show $ deformatNums $ snd' lastDraw))
 
-
+-- | getClientName method.
 getClientName :: Int -> ServerState -> String
 getClientName index clients = unpack $ fst' $ (!!) clients index

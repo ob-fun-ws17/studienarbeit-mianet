@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
+-- | A MianetGameHandler module.
 module MianetGameHandler
 where
 
@@ -52,11 +53,9 @@ resetGamersScore stateMVar = do
 closeGame :: MVar ServerState -> MVar ActiveGame -> IO ()
 closeGame stateMVar activeGameMVar = do
     sendToAllClients stateMVar "Auf Wiedersehen!"
-    modifyMVar_ stateMVar $ \s -> do                        
+    modifyMVar_ stateMVar $ \s -> do
         let s' = []
         return s'
-    modifyMVar_ activeGameMVar $ \s -> do                        
+    modifyMVar_ activeGameMVar $ \s -> do
         let s' = False
         return s'
-
-

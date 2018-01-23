@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
+-- | A Helper module.
 module Helper
 where
 
@@ -20,11 +21,11 @@ prompt myString = do
     getLine
 
 validPort :: String -> Bool
-validPort port = 
+validPort port =
     all (\x -> any (\y -> x == y) (intArrayToString [0..9])) port || length port == 0
 
 intArrayToString :: [Int] -> String
 intArrayToString myArray =
     foldl addToString [] myArray
-    where 
+    where
         addToString myArray element = (head $ show element) : myArray

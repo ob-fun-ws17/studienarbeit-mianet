@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
+-- | A Message module.
 module Message
 ( messageHandler, jsonStringify, jsonParse, jsonToMessageContainer, getCommandOfMessage, getParameterOfMessage, extractContainer, Message
 ) where

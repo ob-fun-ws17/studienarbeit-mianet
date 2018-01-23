@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
+-- | A MianetDistributor module.
 module MianetDistributor
 where
 
@@ -20,7 +21,7 @@ import qualified Network.WebSockets as WS
 
 sendToSenderClient :: WS.Connection -> Text -> IO ()
 sendToSenderClient conn message = do
-    WS.sendTextData conn (message :: Text) 
+    WS.sendTextData conn (message :: Text)
 
 sendToActor :: MVar ServerState -> Text -> IO ()
 sendToActor stateMVar msg = do

@@ -65,29 +65,32 @@ test-suite MiaNet-test
   main-is:             Spec.hs
   build-depends:       base
                      , MiaNet
+                     , random
                      , hspec
                      , QuickCheck
+  other-modules:       LibSpec
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   default-language:    Haskell2010
 
-test-suite doctest
-  type:                exitcode-stdio-1.0
-  hs-source-dirs:      test
-  main-is:             DocTest.hs
-  build-depends:       base
-                     , doctest
-                     , Glob
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
-  default-language:    Haskell2010
+--test-suite doctest
+--  type:                exitcode-stdio-1.0
+--  hs-source-dirs:      test
+--  main-is:             DocTest.hs
+--  build-depends:       base
+--                     , MiaNet
+--                     , doctest
+--                     , Glob
+--  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+--  default-language:    Haskell2010
 
-test-suite hlint
-  type:                exitcode-stdio-1.0
-  hs-source-dirs:      test
-  main-is:             HLint.hs
-  build-depends:       base
-                     , hlint
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
-  default-language:    Haskell2010
+--test-suite hlint
+--  type:                exitcode-stdio-1.0
+--  hs-source-dirs:      test
+--  main-is:             HLint.hs
+--  build-depends:       base
+--                     , hlint
+--  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+--  default-language:    Haskell2010
 
 --benchmark criterion
 --  type:                exitcode-stdio-1.0

@@ -33,10 +33,7 @@ receiveGameInfo = do
   let serveraddr = head addrinfos
   sock <- socket (addrFamily serveraddr) Datagram defaultProtocol
   bind sock (addrAddress serveraddr)
-
-  forever (do recv sock 8096 >>= print)
-
-  --print "UDP server is waiting..."
-  --recv sock 4096 >>= \message -> print ("UDP server received: " ++ (C.unpack message))
-  --print "UDP server socket is closing now."
-  --close sock
+  --forever (do recv sock 8096 >>= print)
+  print "Looking for games..."
+  recv sock 8096 >>= \message -> print (C.unpack message)
+  close sock

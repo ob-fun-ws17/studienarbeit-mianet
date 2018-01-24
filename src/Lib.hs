@@ -11,7 +11,7 @@ import qualified Data.ByteString.Char8 as C
 import Network.Socket hiding     (recv)
 import Network.Socket.ByteString (recv, sendAll)
 
--- broadcast relevant Information ( hostname and port ).
+-- | broadcast relevant Information ( hostname and port ).
 broadcastGameInfo :: String -> IO ()
 broadcastGameInfo s = do
     addrinfos <- getAddrInfo Nothing (Just "255.255.255.255") (Just "9990")
@@ -23,7 +23,7 @@ broadcastGameInfo s = do
     close sock
     threadDelay 1000000
 
--- receive broadcasting information in order to connect to a game.
+-- | receive broadcasting information in order to connect to a game.
 receiveGameInfo :: IO ()
 receiveGameInfo = do
   addrinfos <- getAddrInfo Nothing (Just "0.0.0.0") (Just "9990")

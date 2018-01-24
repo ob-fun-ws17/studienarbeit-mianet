@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
--- | Main module.
-module Main where
+-- | Server module.
+module Server where
 
 import Dice
 import Types
@@ -53,7 +53,7 @@ listClients :: ServerState -> IO ()
 listClients clients =
     forM_ clients $ \(name, _, _) -> print name
 
--- | Main method
+-- | Main method.
 main :: IO ()
 main = do
     portConf

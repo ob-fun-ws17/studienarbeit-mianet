@@ -17,15 +17,18 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import qualified Network.WebSockets as WS
 
+-- | removes a client from the connection list.
 removeClient :: Client -> ServerState -> ServerState
 removeClient client clients =
     filter (\(a,_, _) -> a /= fst' client) clients
 
+-- | sends a message to all clients.
 broadcast :: Text -> ServerState -> IO ()
 broadcast message clients = do
     T.putStrLn message
     forM_ clients $ \(_, conn, _) -> WS.sendTextData conn message
 
+-- | sends a message to all client except of the sender client (last active client).
 broadcastExceptSender :: Text -> Client -> ServerState -> IO ()
 broadcastExceptSender message client clients = do
     T.putStrLn message
@@ -33,12 +36,14 @@ broadcastExceptSender message client clients = do
     where
         newClients = removeClient client clients
 
+-- | sends a message to a specific client
 sendToClient :: Int -> Text -> ServerState -> IO ()
 sendToClient index message clients = do
     WS.sendTextData conn message
     where
         conn = snd' $ (!!) clients index
 
+-- | broadcast to all clients except of a specific client
 broadcastExceptOf :: Text -> [Text] -> ServerState -> IO ()
 broadcastExceptOf message exceptions clients = do
     T.putStrLn message
@@ -46,6 +51,7 @@ broadcastExceptOf message exceptions clients = do
     where
         newClients = filter (\(name,_,_) -> not (any (\y -> name == y) exceptions)) clients
 
+-- | send a message to the list client in the connection list.
 sendToLastClient :: Text -> ServerState -> IO ()
 sendToLastClient message clients = do
     WS.sendTextData conn message

@@ -21,10 +21,11 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import qualified Network.WebSockets as WS
 
-
+-- | moves the first client in the connection list to the last position.
 moveClient :: ServerState -> ServerState
 moveClient clients = tail clients ++ [head clients]
 
+-- | the reactor accused the actor of lying. it returns the result. 
 accuse :: MVar ServerState -> MVar Draw -> Int -> IO ()
 accuse stateMVar lastDrawMVar maxScore = do
             lastDraw <- readMVar lastDrawMVar
@@ -47,7 +48,7 @@ accuse stateMVar lastDrawMVar maxScore = do
 
             nextDraw stateMVar lastDrawMVar 0 maxScore
 
-
+-- |increments the score of the actor or reactor. 
 incrementScore :: MVar ServerState -> (MVar ServerState -> IO Text) -> IO ()
 incrementScore stateMVar func = do
     name <- func stateMVar
@@ -55,11 +56,13 @@ incrementScore stateMVar func = do
         let s' = incrementWinCountForClient name s
         return s'
 
+-- | increments the score of a specific client.
 incrementWinCountForClient :: Text -> ServerState -> ServerState
 incrementWinCountForClient clientName clients =
     --filter (\(a,_, _) -> a /= clientName) clients
     map (\(a, b, c) -> if a == clientName then (a, b, c + 1) else (a, b, c)) clients
 
+-- | initiates the next draw and sends the respective messages to the clients
 nextDraw :: MVar ServerState -> MVar Draw -> Int -> Int -> IO ()
 nextDraw stateMVar lastDrawMVar lastRoundWin maxScore = do
 
@@ -96,6 +99,7 @@ nextDraw stateMVar lastDrawMVar lastRoundWin maxScore = do
                 else do
                     endOfGameFunc stateMVar maxScore
 
+-- | initiates the next draw. it calls the moveClient function.
 moveToNextDraw :: MVar ServerState -> IO (MVar ServerState)
 moveToNextDraw stateMVar = do
     modifyMVar_ stateMVar $ \s -> do
@@ -103,7 +107,7 @@ moveToNextDraw stateMVar = do
         return s'
     return stateMVar
 
-
+-- | rolls dices two times and returns the result.
 rollDices' :: MVar Draw -> IO Int
 rollDices' lastDrawMVar = do
     roll1 <- rollDice
@@ -114,12 +118,13 @@ rollDices' lastDrawMVar = do
         return s'
     return nums
 
+-- | checks if somebody got the max score. 
 checkForWin :: MVar ServerState -> Int -> IO Bool
 checkForWin stateMVar maxScore = do
     state <- readMVar stateMVar
     return (any (\(_, _, win) -> win == maxScore) state)
 
-
+-- | inititates the end of a game.
 endOfGameFunc :: MVar ServerState -> Int -> IO ()
 endOfGameFunc stateMVar maxScore = do
     state <- readMVar stateMVar
@@ -130,7 +135,7 @@ endOfGameFunc stateMVar maxScore = do
     -- broadcastExceptOf msg [actor] state  stateMVar ("Spiel beendet. " `mappend` actorN `mappend` " hat gewonnen")
     sendToAllClients stateMVar ("nochmal: (rematch). Spiel verlassen: (closeGame)")
 
-
+-- | it logs the entered dice result of the actor.
 logResult :: MVar ServerState -> MVar Draw -> String -> IO ()
 logResult stateMVar lastDrawMVar parameter =
     if validResult parameter
@@ -166,8 +171,22 @@ logResult stateMVar lastDrawMVar parameter =
     where
         loggedResult = foldl addToListWithConv ([] :: [Int]) parameter
 
+
+-- | checks if it's a valid result.
 validResult :: String -> Bool
 validResult parameter = (length parameter == 2) && (all (\x -> any (\y -> y == x) dice) parameter)
 
+-- | converts a char to a list of integer and puts it to another list of integer.
 addToListWithConv :: [Int] -> Char -> [Int]
 addToListWithConv myList myChar = (read ([myChar]) :: Int) : myList
+
+-- | in process.
+addToListWithConv' :: [Int] -> Char -> Maybe [Int]
+addToListWithConv' myList myChar = 
+    case myChar of
+        _ | any (\x -> [myChar] == x) numsAsString -> Just readList
+          | otherwise -> Nothing
+        
+    where 
+        readList = (read ([myChar]) :: Int) : myList
+        numsAsString = map (\x -> show x) [0..9]

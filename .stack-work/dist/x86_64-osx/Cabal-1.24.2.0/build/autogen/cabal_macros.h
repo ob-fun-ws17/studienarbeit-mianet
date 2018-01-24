@@ -105,13 +105,6 @@
   (major1) == 2 && (major2) <  4 || \
   (major1) == 2 && (major2) == 4 && (minor) <= 4)
 
-/* tool cpphs-1.20.8 */
-#define TOOL_VERSION_cpphs "1.20.8"
-#define MIN_TOOL_VERSION_cpphs(major1,major2,minor) (\
-  (major1) <  1 || \
-  (major1) == 1 && (major2) <  20 || \
-  (major1) == 1 && (major2) == 20 && (minor) <= 8)
-
 /* tool gcc-4.2.1 */
 #define TOOL_VERSION_gcc "4.2.1"
 #define MIN_TOOL_VERSION_gcc(major1,major2,minor) (\
@@ -140,13 +133,6 @@
   (major1) == 2 && (major2) <  17 || \
   (major1) == 2 && (major2) == 17 && (minor) <= 3)
 
-/* tool happy-1.19.8 */
-#define TOOL_VERSION_happy "1.19.8"
-#define MIN_TOOL_VERSION_happy(major1,major2,minor) (\
-  (major1) <  1 || \
-  (major1) == 1 && (major2) <  19 || \
-  (major1) == 1 && (major2) == 19 && (minor) <= 8)
-
 /* tool hpc-0.67 */
 #define TOOL_VERSION_hpc "0.67"
 #define MIN_TOOL_VERSION_hpc(major1,major2,minor) (\
@@ -160,20 +146,6 @@
   (major1) <  0 || \
   (major1) == 0 && (major2) <  68 || \
   (major1) == 0 && (major2) == 68 && (minor) <= 1)
-
-/* tool hscolour-1.24 */
-#define TOOL_VERSION_hscolour "1.24"
-#define MIN_TOOL_VERSION_hscolour(major1,major2,minor) (\
-  (major1) <  1 || \
-  (major1) == 1 && (major2) <  24 || \
-  (major1) == 1 && (major2) == 24 && (minor) <= 0)
-
-/* tool pkg-config-0.29.2 */
-#define TOOL_VERSION_pkg_config "0.29.2"
-#define MIN_TOOL_VERSION_pkg_config(major1,major2,minor) (\
-  (major1) <  0 || \
-  (major1) == 0 && (major2) <  29 || \
-  (major1) == 0 && (major2) == 29 && (minor) <= 2)
 
 #define CURRENT_COMPONENT_ID "MiaNet-0.1.0.0-EDY4Kxn7XTb8nMYURSxZLN"
 

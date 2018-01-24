@@ -23,6 +23,7 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import qualified Network.WebSockets as WS
 
+-- | creates a random order for game.
 shuffleOrder :: MVar ServerState -> IO (MVar ServerState)
 shuffleOrder stateMVar = do
     modifyMVar_ stateMVar $ \s -> do
@@ -30,6 +31,7 @@ shuffleOrder stateMVar = do
         return s'
     return stateMVar
 
+-- | initiates a rematch. 
 rematch :: MVar ServerState -> MVar Draw -> Int -> IO ()
 rematch stateMVar lastDrawMVar maxScore = do
     resetLastDraw lastDrawMVar
@@ -37,19 +39,21 @@ rematch stateMVar lastDrawMVar maxScore = do
     shuffledStateMVar <- shuffleOrder stateMVar
     nextDraw shuffledStateMVar lastDrawMVar 0 maxScore
 
-
+-- | resets the last draw mvar variable. for example if somebody has lied.
 resetLastDraw :: MVar Draw -> IO ()
 resetLastDraw lastDrawMVar = do
     modifyMVar_ lastDrawMVar $ \s -> do
         let s' = (0, 0, 0)
         return s'
 
+-- | resets the gamers score.
 resetGamersScore :: MVar ServerState -> IO ()
 resetGamersScore stateMVar = do
     modifyMVar_ stateMVar $ \s -> do
         let s' = map (\(a, b, c) -> (a, b, c - c)) s
         return s'
 
+-- | closes a game.
 closeGame :: MVar ServerState -> MVar ActiveGame -> IO ()
 closeGame stateMVar activeGameMVar = do
     sendToAllClients stateMVar "Auf Wiedersehen!"

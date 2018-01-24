@@ -32,30 +32,63 @@ instance FromJSON Message where
 instance ToJSON Message where
     toJSON (Message cmd param) = object ["command" .= cmd, "parameter" .= param]
 
--- | takes text and returns String.
+-- | converts command line input into json.
 messageHandler :: Text -> String
 messageHandler msg = C.unpack message
     where message = encode $ Message { command = cmd, parameter = param }
-          cmd = head $ splitOn " " $ unpack msg
-          param = last $ splitOn " " $ unpack msg
+          cmd = head $ cmdLineParams
+          param = if (length cmdLineParams > 1) then (!!) cmdLineParams 1 else ""
+          cmdLineParams = getCmdLineParams (unpack msg)
 
--- | takes ByteString and returns String.
+-- | handles the command line input.
+getCmdLineParams :: String -> [String]
+getCmdLineParams message = formatCmdLineParam $ foldl splitCmdLine ("", [], False) message
+
+-- | splits the command line input.
+splitCmdLine :: (String, [String], Bool) -> Char -> (String, [String], Bool)
+splitCmdLine (charArray, stringArray, doubleQuotes) char = 
+    if (doubleQuotes)
+        then
+            if (char /= '\'') 
+                then
+                    (char : charArray, stringArray, True)
+                else                    
+                    ([], charArray : stringArray, False) 
+        else  
+            if (char == ' ' || char == '\'') 
+                then 
+                    ([], charArray : stringArray, char') 
+                else 
+                    (char : charArray, stringArray, char') 
+    where 
+        char' = if (char == '\'') then True else False
+
+-- | formats the command line input.
+formatCmdLineParam :: (String, [String], Bool) -> [String]
+formatCmdLineParam (charArray, stringArray, doubleQuotes) = filteredResult
+                where
+                    stringArray' = map (\x -> reverse x) stringArray
+                    charArray' = reverse charArray
+                    reversedResult = reverse (charArray' : stringArray' )
+                    filteredResult = filter (\x -> x /= "") reversedResult
+
+-- | takes a json object and convert it to a string.
 jsonStringify :: C.ByteString -> String
 jsonStringify json = C.unpack json
 
--- | takes String and return ByteString.
+-- | takes a string and converts it to a json object.
 jsonParse :: String -> C.ByteString
 jsonParse jsonString = C.pack jsonString
 
--- | takes ByteString and returns Maybe Message.
+-- | takes a jsonObject and puts it in a container.
 jsonToMessageContainer :: C.ByteString -> Maybe Message
 jsonToMessageContainer json = decode $ json :: Maybe Message
 
--- | takes Message and returns commands to String.
+-- | returns the parameter "command" of a message.
 getCommandOfMessage :: Message -> String
 getCommandOfMessage msg = command msg
 
--- | takes Message and returns parameters as String.
+-- | returns the parameter "parameter" of a message.
 getParameterOfMessage :: Message -> String
 getParameterOfMessage msg = parameter msg
 

@@ -40,10 +40,10 @@ actions = [
             ("rematch", 0, "")
             ]
 
--- | sets new state of server.
+-- | initiates the serverState.
 newServerState :: ServerState
 newServerState = []
 
--- | return last draw base.
+-- | initiates the last draw base.
 lastDrawBase :: (Int, Int, Int)
 lastDrawBase = (0, 0, 0)

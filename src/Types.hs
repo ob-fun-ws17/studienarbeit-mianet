@@ -6,17 +6,17 @@ where
 import Data.Text (Text, unpack, pack)
 import qualified Network.WebSockets as WS
 
--- | Client type.
+-- | Client. Game competitor.
 type Client = (Text, WS.Connection, Int)
 
--- | ServerState type.
+-- | ServerState. A list of game competitors.
 type ServerState = [Client]
 
--- | Draw type.
+-- | Draw. logs the diced result, the logged result and the result of the last draw.
 type Draw = (Int, Int, Int)
 
--- | Action type, (commandName, coundOfparameter)
+-- | Action. A list of actions/commands a client can enter. 
 type Action = [(String, Int, String)]
 
--- | ActiveGame type.
+-- | ActiveGame. Information if game is active.
 type ActiveGame = Bool

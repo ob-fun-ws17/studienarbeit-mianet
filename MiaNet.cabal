@@ -61,6 +61,8 @@ executable MiaNet-exe
                      , containers
                      , random-shuffle
                      , regex-posix
+  other-modules:       Server
+                     , Client
   default-language:    Haskell2010
 
 test-suite MiaNet-test

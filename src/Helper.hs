@@ -4,6 +4,7 @@ module Helper
 where
 
 import System.IO
+import Data.Maybe
 
 -- | returns the first element of a 3-element-tupel
 fst' :: (a, b, c) -> a
@@ -28,6 +29,19 @@ prompt myString = do
 validPort :: String -> Bool
 validPort port =
     all (\x -> any (\y -> x == y) (intArrayToString [0..9])) port || length port == 0
+
+-- | checks if the user wants to create or just join a game.
+onlyClient :: String -> Bool
+onlyClient "join" = True
+onlyClient "JOIN" = True
+onlyClient "j" = True
+onlyClient "J" = True
+onlyClient "create" = False
+onlyClient "CREATE" = False
+onlyClient "c" = False
+onlyClient "C" = False
+onlyClient x = False
+
 
 -- | formats a list of integer to a string
 intArrayToString :: [Int] -> String

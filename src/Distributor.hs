@@ -25,13 +25,11 @@ removeClient client clients =
 -- | sends a message to all clients.
 broadcast :: Text -> ServerState -> IO ()
 broadcast message clients = do
-    T.putStrLn message
     forM_ clients $ \(_, conn, _) -> WS.sendTextData conn message
 
 -- | sends a message to all client except of the sender client (last active client).
 broadcastExceptSender :: Text -> Client -> ServerState -> IO ()
 broadcastExceptSender message client clients = do
-    T.putStrLn message
     forM_ newClients $ \(_, conn, _) -> WS.sendTextData conn message
     where
         newClients = removeClient client clients
@@ -46,7 +44,6 @@ sendToClient index message clients = do
 -- | broadcast to all clients except of a specific client
 broadcastExceptOf :: Text -> [Text] -> ServerState -> IO ()
 broadcastExceptOf message exceptions clients = do
-    T.putStrLn message
     forM_ newClients $ \(_, conn, _) -> WS.sendTextData conn message
     where
         newClients = filter (\(name,_,_) -> not (any (\y -> name == y) exceptions)) clients

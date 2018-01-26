@@ -53,34 +53,10 @@ listClients :: ServerState -> IO ()
 listClients clients =
     forM_ clients $ \(name, _, _) -> print name
 
--- | Main method.
-main :: IO ()
-main = do
-    portConf
-    where
-        portConf = do
-            port <- prompt "Port eingeben: "
-            if validPort port
-                then scoreConf port
-                else portConf
-
-        scoreConf port = do
-            score <- prompt "Punkte (max): "
-            if validPort score
-                then startServer port score
-                else scoreConf port
-
-        startServer port score = do
-            lastDrawMVar <- newMVar lastDrawBase
-            stateMVar <- newMVar newServerState
-            activeGameMVar <- newMVar False
-            hostName <- getHostName
-            threadId <- forkIO $ forever (do broadcastGameInfo $ hostName ++ ":" ++ port)
-            WS.runServer "127.0.0.1" (read port) $ application stateMVar lastDrawMVar activeGameMVar (read score) threadId
-
 -- | A method to start the webserver.
 application :: MVar ServerState -> MVar Draw -> MVar ActiveGame -> Int -> ThreadId -> WS.ServerApp
 application stateMVar lastDrawMVar activeGameMVar maxScore threadId pending = do
+    hFlush stdout
     conn <- WS.acceptRequest pending
     WS.forkPingThread conn 30
     msg <- WS.receiveData conn
@@ -136,10 +112,10 @@ application stateMVar lastDrawMVar activeGameMVar maxScore threadId pending = do
 
 -- | The talk method.
 talk :: WS.Connection -> MVar ServerState -> Client -> MVar Draw -> MVar ActiveGame -> Int -> ThreadId ->IO ()
-talk conn stateMVar (user, _, win) lastDrawMVar activeGameMVar maxScore threadId= forever $ do
+talk conn stateMVar (user, _, win) lastDrawMVar activeGameMVar maxScore threadId = forever $ do
     clients <- readMVar stateMVar
     let clients' = clients
-
+    hFlush stdout
     msg <- WS.receiveData conn
 
     case (msg) of

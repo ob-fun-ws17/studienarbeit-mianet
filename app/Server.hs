@@ -86,7 +86,7 @@ application stateMVar lastDrawMVar activeGameMVar maxScore threadId pending = do
                     modifyMVar_ stateMVar $ \s -> do
                         let s' = addClient client s
                         WS.sendTextData conn $
-                            "Hallo! Teilnehmer: " `mappend`
+                            "Herzlich Willkommen! Spieler-Liste: " `mappend`
                             T.intercalate ", " (map fst' s)
                         broadcast (fst' client `mappend` " ist dem Spiel beigetreten. Spiel starten mit (start)") s'
                         return s'

@@ -30,7 +30,7 @@ version = Version [0,1,0,0] []
 bindir, libdir, dynlibdir, datadir, libexecdir, sysconfdir :: FilePath
 
 bindir     = "/Users/philipp/Documents/Semester5/funktionaleProgrammierung/project/studienarbeit-mianet/.stack-work/install/x86_64-osx/lts-9.17/8.0.2/bin"
-libdir     = "/Users/philipp/Documents/Semester5/funktionaleProgrammierung/project/studienarbeit-mianet/.stack-work/install/x86_64-osx/lts-9.17/8.0.2/lib/x86_64-osx-ghc-8.0.2/MiaNet-0.1.0.0-EDY4Kxn7XTb8nMYURSxZLN"
+libdir     = "/Users/philipp/Documents/Semester5/funktionaleProgrammierung/project/studienarbeit-mianet/.stack-work/install/x86_64-osx/lts-9.17/8.0.2/lib/x86_64-osx-ghc-8.0.2/MiaNet-0.1.0.0-HIGK5zgJZCa37UnPs39n1y"
 dynlibdir  = "/Users/philipp/Documents/Semester5/funktionaleProgrammierung/project/studienarbeit-mianet/.stack-work/install/x86_64-osx/lts-9.17/8.0.2/lib/x86_64-osx-ghc-8.0.2"
 datadir    = "/Users/philipp/Documents/Semester5/funktionaleProgrammierung/project/studienarbeit-mianet/.stack-work/install/x86_64-osx/lts-9.17/8.0.2/share/x86_64-osx-ghc-8.0.2/MiaNet-0.1.0.0"
 libexecdir = "/Users/philipp/Documents/Semester5/funktionaleProgrammierung/project/studienarbeit-mianet/.stack-work/install/x86_64-osx/lts-9.17/8.0.2/libexec"

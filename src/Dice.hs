@@ -1,7 +1,6 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
 -- | A Dice module.
-module Dice
-where
+module Dice where
 
 import System.Random
 -------------------------------------------------------------

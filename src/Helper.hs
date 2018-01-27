@@ -1,10 +1,11 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
 -- | A Helper module.
-module Helper
-where
+module Helper where
 
+--------------------------------------------------------------------------------
 import System.IO
 import Data.Maybe
+--------------------------------------------------------------------------------
 
 -- | returns the first element of a 3-element-tupel
 fst' :: (a, b, c) -> a
@@ -41,7 +42,6 @@ onlyClient "CREATE" = False
 onlyClient "c" = False
 onlyClient "C" = False
 onlyClient x = False
-
 
 -- | formats a list of integer to a string
 intArrayToString :: [Int] -> String

@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
 -- | A MianetDraws module.
-module MianetDraws
-where
+module MianetDraws where
 
+--------------------------------------------------------------------------------
 import Helper
 import MianetGetter
 import Types
@@ -20,12 +20,13 @@ import Control.Concurrent (MVar, newMVar, modifyMVar_, modifyMVar, readMVar)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import qualified Network.WebSockets as WS
+--------------------------------------------------------------------------------
 
 -- | moves the first client in the connection list to the last position.
 moveClient :: ServerState -> ServerState
 moveClient clients = tail clients ++ [head clients]
 
--- | the reactor accused the actor of lying. it returns the result. 
+-- | the reactor accused the actor of lying. it returns the result.
 accuse :: MVar ServerState -> MVar Draw -> Int -> IO ()
 accuse stateMVar lastDrawMVar maxScore = do
             lastDraw <- readMVar lastDrawMVar
@@ -48,7 +49,7 @@ accuse stateMVar lastDrawMVar maxScore = do
 
             nextDraw stateMVar lastDrawMVar 0 maxScore
 
--- |increments the score of the actor or reactor. 
+-- |increments the score of the actor or reactor.
 incrementScore :: MVar ServerState -> (MVar ServerState -> IO Text) -> IO ()
 incrementScore stateMVar func = do
     name <- func stateMVar
@@ -118,7 +119,7 @@ rollDices' lastDrawMVar = do
         return s'
     return nums
 
--- | checks if somebody got the max score. 
+-- | checks if somebody got the max score.
 checkForWin :: MVar ServerState -> Int -> IO Bool
 checkForWin stateMVar maxScore = do
     state <- readMVar stateMVar
@@ -182,11 +183,11 @@ addToListWithConv myList myChar = (read ([myChar]) :: Int) : myList
 
 -- | in process.
 addToListWithConv' :: [Int] -> Char -> Maybe [Int]
-addToListWithConv' myList myChar = 
+addToListWithConv' myList myChar =
     case myChar of
         _ | any (\x -> [myChar] == x) numsAsString -> Just readList
           | otherwise -> Nothing
-        
-    where 
+
+    where
         readList = (read ([myChar]) :: Int) : myList
         numsAsString = map (\x -> show x) [0..9]

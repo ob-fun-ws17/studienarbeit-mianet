@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
 -- | Types module.
-module Types
-where
+module Types where
 
+--------------------------------------------------------------------------------
 import Data.Text (Text, unpack, pack)
 import qualified Network.WebSockets as WS
 
@@ -15,7 +15,7 @@ type ServerState = [Client]
 -- | Draw. logs the diced result, the logged result and the result of the last draw.
 type Draw = (Int, Int, Int)
 
--- | Action. A list of actions/commands a client can enter. 
+-- | Action. A list of actions/commands a client can enter.
 type Action = [(String, Int, String)]
 
 -- | ActiveGame. Information if game is active.

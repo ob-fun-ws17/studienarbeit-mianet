@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
 -- | A MianetGetter module.
-module MianetGetter
-where
+module MianetGetter where
 
+--------------------------------------------------------------------------------
 import Helper
 import Types
 import Dice
@@ -18,6 +18,7 @@ import Control.Concurrent (MVar, newMVar, modifyMVar_, modifyMVar, readMVar)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import qualified Network.WebSockets as WS
+--------------------------------------------------------------------------------
 
 -- | returns the actor of the connection list.
 getActor :: MVar ServerState -> IO Client

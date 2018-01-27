@@ -16,7 +16,7 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Lib
+  exposed-modules:     GameInfo
                      , Dice
                      , Types
                      , Distributor
@@ -67,7 +67,7 @@ executable MiaNet-exe
                      , Dice
                      , Distributor
                      , Helper
-                     , Lib
+                     , GameInfo
                      , Message
                      , MianetConstants
                      , MianetDistributor
@@ -87,10 +87,9 @@ test-suite MiaNet-test
                      , hspec
                      , QuickCheck
                      , text
-  other-modules:       LibSpec
+  other-modules:       GameInfoSpec
                      , DiceSpec
                      , HelperSpec
-                     , MianetGetterSpec
                      , MianetDrawsSpec
                      , MessageSpec
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N

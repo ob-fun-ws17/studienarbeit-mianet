@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
 -- | A MianetGameHandler module.
-module MianetGameHandler
-where
+module MianetGameHandler where
 
+--------------------------------------------------------------------------------
 import Helper
 import MianetGetter
 import MianetDraws
@@ -22,6 +22,7 @@ import Control.Concurrent (MVar, newMVar, modifyMVar_, modifyMVar, readMVar)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import qualified Network.WebSockets as WS
+--------------------------------------------------------------------------------
 
 -- | creates a random order for game.
 shuffleOrder :: MVar ServerState -> IO (MVar ServerState)
@@ -31,7 +32,7 @@ shuffleOrder stateMVar = do
         return s'
     return stateMVar
 
--- | initiates a rematch. 
+-- | initiates a rematch.
 rematch :: MVar ServerState -> MVar Draw -> Int -> IO ()
 rematch stateMVar lastDrawMVar maxScore = do
     resetLastDraw lastDrawMVar

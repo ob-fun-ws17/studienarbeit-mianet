@@ -33,7 +33,7 @@ import Network.BSD
 import Network.Socket hiding     (recv)
 import Data.Map (Map)
 import qualified Data.Map as Map
-import Lib (broadcastGameInfo)
+import GameInfo (broadcastGameInfo)
 
 -----------------------------------------------------
 

@@ -12,7 +12,6 @@ import           Control.Monad       (forever, unless)
 import           Control.Monad.Trans (liftIO)
 import           Network.Socket      (withSocketsDo)
 import           Data.Text           (Text, unpack, pack)
-import           Data.List.Split
 import           Control.Applicative
 import           Data.Aeson
 import           GHC.Generics
@@ -20,8 +19,8 @@ import qualified Data.Text           as T
 import qualified Data.Text.IO        as T
 import qualified Network.WebSockets  as WS
 import qualified Data.ByteString.Lazy.Char8 as C
-
 --------------------------------------------------------------------------------
+
 app :: WS.ClientApp ()
 app conn = do
     putStrLn "Bitte Login durchführen (login <username>)"
@@ -41,11 +40,6 @@ app conn = do
             --let command = decode(show(message))
             let messageContainer = jsonToMessageContainer $ jsonParse unhandledMsg
             let msg = extractContainer messageContainer
-
-            -- print command parameter
-            -- print $ getCommandOfMessage msg
-
             unless (T.null line) $ WS.sendTextData conn message >> loop
-
     loop
     WS.sendClose conn ("Bye!" :: Text)

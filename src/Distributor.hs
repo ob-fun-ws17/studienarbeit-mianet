@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
 -- | A Distributor module.
-module Distributor
-where
+module Distributor where
 
+--------------------------------------------------------------------------------
 import Helper
 import Types
 import Data.Maybe
@@ -16,6 +16,7 @@ import Control.Concurrent (MVar, newMVar, modifyMVar_, modifyMVar, readMVar)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import qualified Network.WebSockets as WS
+--------------------------------------------------------------------------------
 
 -- | removes a client from the connection list.
 removeClient :: Client -> ServerState -> ServerState

@@ -2,46 +2,24 @@
 -- | Main module.
 module Main where
 
-import Dice
-import Types
-import Helper
-import MianetDraws
-import MianetGetter
-import MianetConstants
-import MianetGameHandler
-import System.IO
-import MianetDistributor
-import Distributor
-import System.Random.Shuffle
-import Message as MS
-import Data.Maybe
-import Data.Char (isPunctuation, isSpace)
-import Data.Monoid (mappend)
-import Data.Text (Text, unpack, pack)
-import Data.List.Split
-import Data.Aeson
-import GHC.Generics
-import Control.Applicative
-import Control.Exception (finally)
-import Control.Monad (forM_, forever)
-import Control.Concurrent (MVar, newMVar, modifyMVar_, modifyMVar, readMVar, forkIO, killThread, forkOS)
-import GHC.Conc.Sync (ThreadId)
-import qualified Data.Text as T
-import qualified Data.Text.IO as T
-import qualified Network.WebSockets as WS
-import Network.BSD
-import Network.Socket hiding     (recv)
-import Data.Map (Map)
-import qualified Data.Map as Map
-import Lib (broadcastGameInfo, receiveGameInfo)
-import Server
-import Client
-import Control.Monad
+--------------------------------------------------------------------------------
+import           Control.Concurrent    (MVar, newMVar, modifyMVar_, modifyMVar, readMVar, forkIO, killThread)
+import           GameInfo              (broadcastGameInfo, receiveGameInfo, returnHostPortTupel)
+import           Server                (application)
+import           Network.Socket        hiding (recv)
+import           GHC.Conc.Sync         (ThreadId)
+import qualified Network.WebSockets    as WS
+import           Client                (app)
 import qualified Data.ByteString.Char8 as C
-import Data.List.Split
-
-returnHostPortTupel :: String -> (String, Int)
-returnHostPortTupel x = (head $ splitOn ":" x, read (last $ splitOn ":" x))
+import qualified Data.Text.IO          as T
+import qualified Data.Text             as T
+import           Data.List.Split
+import           MianetConstants
+import           Control.Monad
+import           Network.BSD
+import           Data.Maybe
+import           Helper
+--------------------------------------------------------------------------------
 
 -- | Main method
 main :: IO ()

@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
 -- | A MianetDistributor module.
-module MianetDistributor
-where
+module MianetDistributor where
 
+--------------------------------------------------------------------------------
 import Helper
 import MianetGetter
 import Types
@@ -18,6 +18,7 @@ import Control.Concurrent (MVar, newMVar, modifyMVar_, modifyMVar, readMVar)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import qualified Network.WebSockets as WS
+--------------------------------------------------------------------------------
 
 -- | sends a message to the last active client.
 sendToSenderClient :: WS.Connection -> Text -> IO ()

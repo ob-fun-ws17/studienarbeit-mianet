@@ -1,7 +1,6 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
 -- | A MianetConstants module.
-module MianetConstants
-where
+module MianetConstants where
 
 import Types
 

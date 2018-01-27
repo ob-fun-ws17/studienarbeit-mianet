@@ -1,10 +1,17 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
 -- | A Message module.
 module Message
-( messageHandler, jsonStringify, jsonParse, jsonToMessageContainer, getCommandOfMessage, getParameterOfMessage, extractContainer, Message
-) where
+  ( messageHandler
+  , jsonStringify
+  , jsonParse
+  , jsonToMessageContainer
+  , getCommandOfMessage
+  , getParameterOfMessage
+  , extractContainer
+  , Message
+  ) where
 
---------------------------------
+--------------------------------------------------------------------------------
 import           Control.Concurrent  (forkIO)
 import           Control.Monad       (forever, unless)
 import           Control.Monad.Trans (liftIO)
@@ -16,6 +23,7 @@ import           GHC.Generics
 import qualified Data.Text           as T
 import qualified Data.Text.IO        as T
 import qualified Data.ByteString.Lazy.Char8 as C
+--------------------------------------------------------------------------------
 
 -- | Message data.
 data Message = Message {
@@ -46,21 +54,21 @@ getCmdLineParams message = formatCmdLineParam $ foldl splitCmdLine ("", [], Fals
 
 -- | splits the command line input.
 splitCmdLine :: (String, [String], Bool) -> Char -> (String, [String], Bool)
-splitCmdLine (charArray, stringArray, doubleQuotes) char = 
+splitCmdLine (charArray, stringArray, doubleQuotes) char =
     if (doubleQuotes)
         then
-            if (char /= '\'') 
+            if (char /= '\'')
                 then
                     (char : charArray, stringArray, True)
-                else                    
-                    ([], charArray : stringArray, False) 
-        else  
-            if (char == ' ' || char == '\'') 
-                then 
-                    ([], charArray : stringArray, char') 
-                else 
-                    (char : charArray, stringArray, char') 
-    where 
+                else
+                    ([], charArray : stringArray, False)
+        else
+            if (char == ' ' || char == '\'')
+                then
+                    ([], charArray : stringArray, char')
+                else
+                    (char : charArray, stringArray, char')
+    where
         char' = if (char == '\'') then True else False
 
 -- | formats the command line input.

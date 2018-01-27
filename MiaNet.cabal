@@ -45,6 +45,7 @@ library
 
 executable MiaNet-exe
   hs-source-dirs:      app
+                     , src
   main-is:             Main.hs
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base

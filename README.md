@@ -1,5 +1,6 @@
 # MiaNet [![Build Status](https://travis-ci.org/ob-fun-ws17/studienarbeit-mianet.svg?branch=master)](https://travis-ci.org/ob-fun-ws17/studienarbeit-mianet)
 Haskell application implements the game 'Mäxchen' (eng. = 'Mia') / 'Lügen'
+
 This game can be played over the network.
 
 Have a look at the Haskell code:
@@ -63,7 +64,7 @@ other User:
     logresult 41
     warten auf userName
     
-for help (available after min two players are in the game and it has started):
+for help (available after min. two players are in the game and it has been started):
 
     $ stack exec MiaNet-exe
     ...

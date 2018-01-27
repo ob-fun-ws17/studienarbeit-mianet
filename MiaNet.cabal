@@ -1,7 +1,7 @@
 name:                MiaNet
 version:             0.1.0.0
 synopsis:            Mia (Mäxchen/ Lügen) game over the network package.
-description:         Package for the fp lecture project at hm.edu
+description:         Package for the fp lecture project at hm.edu. For more information please see the README on GitHub at <https://github.com/ob-fun-ws17/studienarbeit-mianet>
 homepage:            https://github.com/ob-fun-ws17/studienarbeit-mianet#readme
 license:             BSD3
 license-file:        LICENSE

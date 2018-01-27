@@ -6,7 +6,7 @@ homepage:            https://github.com/ob-fun-ws17/studienarbeit-mianet#readme
 license:             BSD3
 license-file:        LICENSE
 author:              Engelbrecht Nils
-                   , Phillip Mayer
+                   , Philipp Mayer
 maintainer:          n.engelbrecht1@hm.edu
 copyright:           2017 Engelbrecht Nils & Philipp Mayer
 category:            Misc
@@ -45,7 +45,6 @@ library
 
 executable MiaNet-exe
   hs-source-dirs:      app
-                     , src
   main-is:             Main.hs
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base

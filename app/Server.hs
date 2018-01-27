@@ -87,7 +87,7 @@ application stateMVar lastDrawMVar activeGameMVar maxScore threadId pending = do
                         let s' = addClient client s
                         WS.sendTextData conn $
                             "Herzlich Willkommen! Spieler-Liste: " `mappend`
-                            T.intercalate ", " (map fst' s)
+                            T.intercalate ", " (map fst' s')
                         broadcast (fst' client `mappend` " ist dem Spiel beigetreten. Spiel starten mit (start)") s'
                         return s'
 

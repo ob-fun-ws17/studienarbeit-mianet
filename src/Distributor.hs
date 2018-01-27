@@ -1,5 +1,11 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
--- | A Distributor module.
+{- |
+Module      : Helper
+Description : Helper module.
+Copyright   : BSD3
+License     : 2018 Philipp Mayer & Engelbrecht Nils
+Maintainer  : Philipp Mayer, Nils Engelbrecht
+-}
 module Distributor where
 
 --------------------------------------------------------------------------------

@@ -1,5 +1,12 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
 -- | Server module.
+{-|
+Module      : Main
+Description : Main module used to start the Game.
+Copyright   : BSD3
+License     : 2018 Philipp Mayer & Engelbrecht Nils
+Maintainer  : Philipp Mayer, Nils Engelbrecht
+-}
 module Server where
 
 import Dice

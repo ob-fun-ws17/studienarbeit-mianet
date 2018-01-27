@@ -1,4 +1,10 @@
--- | A Lib module.
+{- |
+Module      : GameInfo
+Description : GameInfo module used for broadcasting
+Copyright   : BSD3
+License     : 2018 Philipp Mayer & Engelbrecht Nils
+Maintainer  : Nils Engelbrecht
+-}
 module GameInfo
     ( broadcastGameInfo
     , receiveGameInfo
@@ -15,7 +21,7 @@ import           Network.Socket.ByteString (recv, sendAll)
 import           Data.List.Split
 import           Data.Maybe
 
--- | broadcast relevant Information ( hostname and port ).
+-- | broadcasts relevant information ( hostname and port ) to 255.255.255.255 on port 9559.
 broadcastGameInfo :: String -> IO ()
 broadcastGameInfo s = do
     sock <- socket AF_INET Datagram defaultProtocol
@@ -25,7 +31,7 @@ broadcastGameInfo s = do
     close sock
     threadDelay 1000000
 
--- | receive broadcasting information in order to connect to a game.
+-- | receives broadcasting information on port 9559 on 0.0.0.0 in order to connect to a game.
 receiveGameInfo :: IO (Maybe C.ByteString)
 receiveGameInfo = do
   sock <- socket AF_INET Datagram defaultProtocol    -- create socket
@@ -35,6 +41,6 @@ receiveGameInfo = do
   close sock
   return msg
 
--- | method to get host and port in a tupel out of one string.
+-- | method to get hostname and port in a tupel out of one string.
 returnHostPortTupel :: String -> (String, Int)
 returnHostPortTupel x = (head $ splitOn ":" x, read (last $ splitOn ":" x))

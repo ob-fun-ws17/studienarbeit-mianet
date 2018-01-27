@@ -1,6 +1,12 @@
 --------------------------------------------------------------------------------
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
--- | Client module.
+{-|
+Module      : Client
+Description : Client module used to start the Client WS
+Copyright   : BSD3
+License     : 2018 Philipp Mayer & Engelbrecht Nils
+Maintainer  : Nils Engelbrecht
+-}
 module Client
     ( app
     ) where

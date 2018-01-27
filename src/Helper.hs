@@ -1,5 +1,11 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
--- | A Helper module.
+{- |
+Module      : Helper
+Description : Helper module.
+Copyright   : BSD3
+License     : 2018 Philipp Mayer & Engelbrecht Nils
+Maintainer  : Philipp Mayer
+-}
 module Helper where
 
 --------------------------------------------------------------------------------

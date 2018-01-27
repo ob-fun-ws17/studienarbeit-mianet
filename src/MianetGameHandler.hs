@@ -1,5 +1,11 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
--- | A MianetGameHandler module.
+{- |
+Module      : MianetGameHandler
+Description : This module implements basic methods needed for the logic of the game such as resetting scores..
+Copyright   : BSD3
+License     : 2018 Philipp Mayer & Engelbrecht Nils
+Maintainer  : Philipp Mayer
+-}
 module MianetGameHandler where
 
 --------------------------------------------------------------------------------

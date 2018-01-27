@@ -1,5 +1,11 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
--- | Types module.
+{- |
+Module      : Types
+Description : various types
+Copyright   : BSD3
+License     : 2018 Philipp Mayer & Engelbrecht Nils
+Maintainer  : Philipp Mayer
+-}
 module Types where
 
 --------------------------------------------------------------------------------

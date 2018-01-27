@@ -1,9 +1,9 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
 {- |
 Module      : Types
-Description : various types
-Copyright   : BSD3
-License     : 2018 Philipp Mayer & Engelbrecht Nils
+Description : various types.
+Copyright   : 2018 Philipp Mayer & Engelbrecht Nils
+License     : BSD3
 Maintainer  : Philipp Mayer
 -}
 module Types where
@@ -11,6 +11,7 @@ module Types where
 --------------------------------------------------------------------------------
 import Data.Text (Text, unpack, pack)
 import qualified Network.WebSockets as WS
+--------------------------------------------------------------------------------
 
 -- | Client. Game competitor.
 type Client = (Text, WS.Connection, Int)

@@ -2,12 +2,11 @@
 {- |
 Module      : MianetDraws
 Description : This module implements the logic of the game
-Copyright   : BSD3
-License     : 2018 Philipp Mayer & Engelbrecht Nils
+Copyright   : 2018 Philipp Mayer & Engelbrecht Nils
+License     : BSD3
 Maintainer  : Philipp Mayer
 -}
 module MianetDraws where
-
 --------------------------------------------------------------------------------
 import Helper
 import MianetGetter

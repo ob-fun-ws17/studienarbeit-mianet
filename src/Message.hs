@@ -2,8 +2,8 @@
 {- |
 Module      : Message
 Description : Message module.
-Copyright   : BSD3
-License     : 2018 Philipp Mayer & Engelbrecht Nils
+Copyright   : 2018 Philipp Mayer & Engelbrecht Nils
+License     : BSD3
 Maintainer  : Philipp Mayer
 -}
 module Message
@@ -16,7 +16,6 @@ module Message
   , extractContainer
   , Message
   ) where
-
 --------------------------------------------------------------------------------
 import           Control.Concurrent  (forkIO)
 import           Control.Monad       (forever, unless)

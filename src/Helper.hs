@@ -2,12 +2,12 @@
 {- |
 Module      : Helper
 Description : Helper module.
-Copyright   : BSD3
-License     : 2018 Philipp Mayer & Engelbrecht Nils
+Copyright   : 2018 Philipp Mayer & Engelbrecht Nils
+License     : BSD3
 Maintainer  : Philipp Mayer
 -}
 module Helper where
-
+-- Helper module.
 --------------------------------------------------------------------------------
 import System.IO
 import Data.Maybe

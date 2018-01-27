@@ -2,12 +2,11 @@
 {- |
 Module      : MianetConstants
 Description : This module is mainly used for storing commands listed in help.
-Copyright   : BSD3
-License     : 2018 Philipp Mayer & Engelbrecht Nils
+Copyright   : 2018 Philipp Mayer & Engelbrecht Nils
+License     : BSD3
 Maintainer  : Philipp Mayer
 -}
 module MianetConstants where
-
 import Types
 
 -- | actions method returns a list of actions.

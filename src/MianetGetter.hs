@@ -2,12 +2,11 @@
 {- |
 Module      : MianetGetter
 Description : implements basic methods needed the game logic such as resetting scores..
-Copyright   : BSD3
-License     : 2018 Philipp Mayer & Engelbrecht Nils
+Copyright   : 2018 Philipp Mayer & Engelbrecht Nils
+License     : BSD3
 Maintainer  : Philipp Mayer
 -}
 module MianetGetter where
-
 --------------------------------------------------------------------------------
 import Helper
 import Types

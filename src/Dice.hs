@@ -2,15 +2,17 @@
 {- |
 Module      : Dice
 Description : Dice module.
-Copyright   : BSD3
-License     : 2018 Philipp Mayer & Engelbrecht Nils
+Copyright   : 2018 Philipp Mayer & Engelbrecht Nils
+License     : BSD3
 Maintainer  : Philipp Mayer, Nils Engelbrecht
 -}
 module Dice where
 
+-------------------------------------------------------------
 import System.Random
 -------------------------------------------------------------
 
+-- | string represents the dice.
 dice :: String
 dice = "123456"
 

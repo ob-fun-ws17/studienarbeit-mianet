@@ -2,12 +2,11 @@
 {- |
 Module      : MianetDistributor
 Description : This module is used for distributing messages with various recipients.
-Copyright   : BSD3
-License     : 2018 Philipp Mayer & Engelbrecht Nils
+Copyright   : 2018 Philipp Mayer & Engelbrecht Nils
+License     : BSD3
 Maintainer  : Philipp Mayer
 -}
 module MianetDistributor where
-
 --------------------------------------------------------------------------------
 import Helper
 import MianetGetter

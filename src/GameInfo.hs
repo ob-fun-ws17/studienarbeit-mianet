@@ -1,8 +1,8 @@
 {- |
 Module      : GameInfo
-Description : GameInfo module used for broadcasting
-Copyright   : BSD3
-License     : 2018 Philipp Mayer & Engelbrecht Nils
+Description : module used for broadcasting.
+Copyright   : 2018 Philipp Mayer & Engelbrecht Nils
+License     : BSD3
 Maintainer  : Nils Engelbrecht
 -}
 module GameInfo
@@ -10,6 +10,7 @@ module GameInfo
     , receiveGameInfo
     , returnHostPortTupel
     ) where
+-- This module is used for broadcasting and receiving game info.
 
 import           System.Environment
 import           System.Timeout

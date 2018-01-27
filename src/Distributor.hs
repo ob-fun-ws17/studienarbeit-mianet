@@ -2,12 +2,12 @@
 {- |
 Module      : Helper
 Description : Helper module.
-Copyright   : BSD3
-License     : 2018 Philipp Mayer & Engelbrecht Nils
+Copyright   : 2018 Philipp Mayer & Engelbrecht Nils
+License     : BSD3
 Maintainer  : Philipp Mayer, Nils Engelbrecht
 -}
 module Distributor where
-
+-- This module is used for distributing messages.
 --------------------------------------------------------------------------------
 import Helper
 import Types
@@ -48,14 +48,14 @@ sendToClient index message clients = do
     where
         conn = snd' $ (!!) clients index
 
--- | broadcast to all clients except of a specific client
+-- | broadcasts to all clients except of a specific client
 broadcastExceptOf :: Text -> [Text] -> ServerState -> IO ()
 broadcastExceptOf message exceptions clients = do
     forM_ newClients $ \(_, conn, _) -> WS.sendTextData conn message
     where
         newClients = filter (\(name,_,_) -> not (any (\y -> name == y) exceptions)) clients
 
--- | send a message to the list client in the connection list.
+-- | sends a message to the list client in the connection list.
 sendToLastClient :: Text -> ServerState -> IO ()
 sendToLastClient message clients = do
     WS.sendTextData conn message

@@ -1,5 +1,11 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
--- | A Dice module.
+{- |
+Module      : Dice
+Description : Dice module.
+Copyright   : BSD3
+License     : 2018 Philipp Mayer & Engelbrecht Nils
+Maintainer  : Philipp Mayer, Nils Engelbrecht
+-}
 module Dice where
 
 import System.Random

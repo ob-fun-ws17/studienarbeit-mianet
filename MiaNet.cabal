@@ -8,7 +8,7 @@ license-file:        LICENSE
 author:              Engelbrecht Nils
                    , Phillip Mayer
 maintainer:          n.engelbrecht1@hm.edu
-copyright:           2017 Engelbrecht Nils & Philipp Mayer
+copyright:           2018 Philipp Mayer & Engelbrecht Nils
 category:            Misc
 build-type:          Simple
 extra-source-files:  README.md

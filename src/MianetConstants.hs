@@ -1,5 +1,11 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
--- | A MianetConstants module.
+{- |
+Module      : MianetConstants
+Description : This module is mainly used for storing commands listed in help.
+Copyright   : BSD3
+License     : 2018 Philipp Mayer & Engelbrecht Nils
+Maintainer  : Philipp Mayer
+-}
 module MianetConstants where
 
 import Types

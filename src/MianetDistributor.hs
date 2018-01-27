@@ -1,5 +1,11 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
--- | A MianetDistributor module.
+{- |
+Module      : MianetDistributor
+Description : This module is used for distributing messages with various recipients.
+Copyright   : BSD3
+License     : 2018 Philipp Mayer & Engelbrecht Nils
+Maintainer  : Philipp Mayer
+-}
 module MianetDistributor where
 
 --------------------------------------------------------------------------------

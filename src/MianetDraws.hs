@@ -1,5 +1,11 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
--- | A MianetDraws module.
+{- |
+Module      : MianetDraws
+Description : This module implements the logic of the game
+Copyright   : BSD3
+License     : 2018 Philipp Mayer & Engelbrecht Nils
+Maintainer  : Philipp Mayer
+-}
 module MianetDraws where
 
 --------------------------------------------------------------------------------
@@ -49,7 +55,7 @@ accuse stateMVar lastDrawMVar maxScore = do
 
             nextDraw stateMVar lastDrawMVar 0 maxScore
 
--- |increments the score of the actor or reactor.
+-- | increments the score of the actor or reactor.
 incrementScore :: MVar ServerState -> (MVar ServerState -> IO Text) -> IO ()
 incrementScore stateMVar func = do
     name <- func stateMVar
@@ -63,7 +69,7 @@ incrementWinCountForClient clientName clients =
     --filter (\(a,_, _) -> a /= clientName) clients
     map (\(a, b, c) -> if a == clientName then (a, b, c + 1) else (a, b, c)) clients
 
--- | initiates the next draw and sends the respective messages to the clients
+-- | initiates the next draw and sends the respective messages to the clients.
 nextDraw :: MVar ServerState -> MVar Draw -> Int -> Int -> IO ()
 nextDraw stateMVar lastDrawMVar lastRoundWin maxScore = do
 

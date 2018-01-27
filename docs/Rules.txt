@@ -11,7 +11,7 @@ die Möglichkeit ein anderes Ergebnis zu nennen - zu LÜGEN. (command: logresult
 Unabhängig davon ob der Actor lügt oder die Wahrheit sagt, muss der nachfolgende Spieler (Reactor) entscheiden, 
 ob er dem Actor glaubt oder ihm der Lüge bezichtigt. 
 
-Glaubt er ihm (command: nextdraw) wird eine neue Runde gestartet. Der Reactor wird zum Actor (würfelnden Spieler) und 
+Glaubt er ihm (command: nextdraw) wird eine neue Runde gestartet. Der Reactor wird zum Actor (würfelnder Spieler) und
 muss das geglaubte Würfel-Ergebnis übertreffen.
 
 Glaubt er ihm hingegen nicht (command: accuse), wird das das gewürfelte Ergebnis offen gelegt und mit dem genannten Ergebnis verglichen. 

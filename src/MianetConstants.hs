@@ -14,7 +14,7 @@ import Types
 actions :: Action
 actions = [
             --0
-            ("help", 0, "User: All. Vorangegangenes Kommando: -. Descr:Hilfe anzeigen"),
+            ("help", 0, "User: All. Vorangegangenes Kommando: -. Descr: Hilfe anzeigen"),
             --1
             ("chat", 1, "User: All. Vorangegangenes Kommando: -. Descr: Nachricht an alle anderen Teilnehmer senden (Single-Quotes bei Sätzen)"),
             --2
@@ -28,7 +28,7 @@ actions = [
             --6
             ("getwin", 1, "User: All. Vorangegangenes Kommando: -. Descr: Ergebnis eines bestimmten Spielers abfragen"),
             --7
-            ("help", 0, "User: All. Vorangegangenes Kommando: -. Descr:Hilfe anzeigen"),
+            ("help", 0, "User: All. Vorangegangenes Kommando: -. Descr: Hilfe anzeigen"),
             --8
             ("logresult", 1, "User: Actor. Vorangegangenes Kommando: rolldices. Descr: Würfelergebnis oder Lüge kann eingegeben werden (Eingabe > Ergebnis vorangegangener Runde)"),
             --9

@@ -5,18 +5,26 @@ This game can be played over the network.
 Have a look at the hasekell code:
 https://ob-fun-ws17.github.io/studienarbeit-mianet/
 
-### Install
+# Requirements
+
+-   [Haskell](https://www.haskell.org/downloads)
+-   on MacOS: ```$ brew install stack```
+
+# Quickstart
+
+## Install
 download: ```git clone https://github.com/ob-fun-ws17/studienarbeit-mianet.git```
-on MacOS: ```brew install stack```
+In the top directory do
+    $ stack install
 build: ```stack build```
 
-### Run
+## Run
 To run the game you can type ```stack exec mianet-exe```
 
-### Tests
+## Tests
 For unit tests simply run ```stack test```
 
-### Rules
+## MiaNet --- Usage
 [click here for the rules](https://github.com/ob-fun-ws17/studienarbeit-mianet/blob/nils/docs/Rules.txt)
 
 

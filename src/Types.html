@@ -1,0 +1,30 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE OverloadedStrings, DeriveGeneric #-}</span><span>
+</span><a name="line-2"></a><span class="hs-comment">{- |
+Module      : Types
+Description : various types.
+Copyright   : 2018 Philipp Mayer &amp; Engelbrecht Nils
+License     : BSD3
+Maintainer  : Philipp Mayer
+-}</span><span>
+</span><a name="line-9"></a><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Types</span><span> </span><span class="hs-keyword">where</span><span>
+</span><a name="line-10"></a><span>
+</span><a name="line-11"></a><span class="hs-comment">--------------------------------------------------------------------------------</span><span>
+</span><a name="line-12"></a><span class="hs-keyword">import</span><span> </span><span class="hs-identifier">Data</span><span class="hs-operator">.</span><span class="hs-identifier">Text</span><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-type">Text</span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-var">unpack</span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-var">pack</span><span class="hs-special">)</span><span>
+</span><a name="line-13"></a><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-identifier">Network</span><span class="hs-operator">.</span><span class="hs-identifier">WebSockets</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="hs-identifier">WS</span><span>
+</span><a name="line-14"></a><span class="hs-comment">--------------------------------------------------------------------------------</span><span>
+</span><a name="line-15"></a><span>
+</span><a name="line-16"></a><span class="hs-comment">-- | Client. Game competitor.</span><span>
+</span><a name="line-17"></a><span class="hs-keyword">type</span><span> </span><a name="Client"><a href="Types.html#Client"><span class="hs-identifier">Client</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-type">Text</span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-type">WS</span><span class="hs-operator hs-type">.</span><span class="hs-identifier hs-type">Connection</span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-type">Int</span><span class="hs-special">)</span><span>
+</span><a name="line-18"></a><span>
+</span><a name="line-19"></a><span class="hs-comment">-- | ServerState. A list of game competitors.</span><span>
+</span><a name="line-20"></a><span class="hs-keyword">type</span><span> </span><a name="ServerState"><a href="Types.html#ServerState"><span class="hs-identifier">ServerState</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><a href="Types.html#Client"><span class="hs-identifier hs-type">Client</span></a><span class="hs-special">]</span><span>
+</span><a name="line-21"></a><span>
+</span><a name="line-22"></a><span class="hs-comment">-- | Draw. logs the diced result, the logged result and the result of the last draw.</span><span>
+</span><a name="line-23"></a><span class="hs-keyword">type</span><span> </span><a name="Draw"><a href="Types.html#Draw"><span class="hs-identifier">Draw</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-type">Int</span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-type">Int</span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-type">Int</span><span class="hs-special">)</span><span>
+</span><a name="line-24"></a><span>
+</span><a name="line-25"></a><span class="hs-comment">-- | Action. A list of actions/commands a client can enter.</span><span>
+</span><a name="line-26"></a><span class="hs-keyword">type</span><span> </span><a name="Action"><a href="Types.html#Action"><span class="hs-identifier">Action</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="hs-identifier hs-type">String</span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-type">Int</span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-type">String</span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><a name="line-27"></a><span>
+</span><a name="line-28"></a><span class="hs-comment">-- | ActiveGame. Information if game is active.</span><span>
+</span><a name="line-29"></a><span class="hs-keyword">type</span><span> </span><a name="ActiveGame"><a href="Types.html#ActiveGame"><span class="hs-identifier">ActiveGame</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier hs-type">Bool</span><span>
+</span><a name="line-30"></a></pre></body></html>

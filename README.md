@@ -88,7 +88,7 @@ for help (available after min. two players are in the game and it has been start
 
 
 ### Assignment of tasks:
-| Game (Server & Client)          | Documentation    | Testing          |
-| ------------------------------- | ---------------- | -----------------|
-| Philipp Mayer                   | Nils Engelbrecht | Nils Engelbrecht |
-| Nils Engelbrecht (Broadcasting) |                  | Philipp Mayer    |
+| Game (Server & Client)          | Documentation           | Testing          |
+| ------------------------------- | ----------------------- | -----------------|
+| Philipp Mayer                   | Nils Engelbrecht        | Nils Engelbrecht |
+| Nils Engelbrecht (Broadcasting) | Philipp Mayer (Haddock) | Philipp Mayer    |
